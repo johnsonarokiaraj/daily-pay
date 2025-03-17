@@ -13,7 +13,10 @@
  *= require_tree .
  *= require_self
  */
-
+@import "variables";
 @import "bootstrap-sprockets";
 @import "bootstrap";
+@import "bootstrap-datepicker3";
+@import "font-awesome";
 @import "layout";
+@import "menu";

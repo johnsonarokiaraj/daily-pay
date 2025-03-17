@@ -1,0 +1,54 @@
+
+<table class="table">
+  <tr>
+    <td class="col-md-3"><h3 class="title"><span class="fa fa-credit-card"></span> Payment Sources</h3></td>
+    <td class="col-md-9">
+      <div class="msg">
+        <% if flash[:alert].present? %>
+          <div class="alert alert-danger"><%= flash[:alert] %></div>
+        <% end %>
+        <% if flash[:notice].present? %>
+          <div class="alert alert-success"><%= flash[:notice] %></div>
+        <% end %>
+      </div>
+    </td>
+  </tr>
+</table>
+
+<table class="table table-striped table-bordered">
+  <%= form_with model: @payment_sources, url: admin_payment_sources_path, remote: true, html: { id: "payment_source-form" } do |f| %>
+  <tr>
+    <td class="col-md-5"><label>Name</label><%= f.text_field :name, placeholder: "Enter the name", value: "", class: "form-control" %></td>
+    <td class="col-md-5"><label>Payment type</label><%= f.select :payment_type, payment_type_values, {}, {class: "form-control"} %></td>
+    <td class="col-md-2"><button type="submit" class="btn btn-primary table-btn">Add</button></td>
+  </tr>
+  <% end %>
+</table>
+
+<table class="table table-striped table-bordered">
+  <% if @payment_sources.present? %>
+    <thead>
+    <tr>
+      <th class="col-md-5">Name</th>
+      <th class="col-md-5">Payment type</th>
+      <th class="col-md-2">Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @payment_sources.each do |payment_source| %>
+      <tr>
+        <td><%= payment_source.name %></td>
+        <td><%= payment_source.payment_type %></td>
+        <td>
+          <a href="#" class="fa fa-pencil-square-o edit" title="disabled"></a>
+          <a href="#" class="fa fa-trash-o delete" title="disabled"></a>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  <% else %>
+    <tr>
+      <td colspan="3" class="text-center alert alert-info">No payment_sources are available to display</td>
+    </tr>
+  <% end %>
+</table>

@@ -1,15 +1,9 @@
 <!-- Navbar -->
-<nav class="navbar bd-navbar">
+<nav class="top-navbar bd-navbar">
   <div class="container-fluid">
-    <div class="navbar-header">
-      <div class="navbar-brand">
-        <i class="glyphicon glyphicon-euro"></i>
-        Daily Pay
-      </div>
-    </div>
     <ul class="nav navbar-nav navbar-right">
-      <li><a href="#"><span class="glyphicon glyphicon-user"></span> Profile</a></li>
-      <li><a href="#"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+      <li class="<%= active_class_condition(!params[:controller].include?("admin/")) %>"><a href="<%= transactions_path %>"><span class="fa fa-tachometer"></span> Dashboard</a></li>
+      <li class="<%= active_class_condition(params[:controller].include?("admin/")) %>"><a href="<%= admin_budgets_path %>"><span class="glyphicon glyphicon-user"></span> Admin</a></li>
     </ul>
   </div>
 </nav>

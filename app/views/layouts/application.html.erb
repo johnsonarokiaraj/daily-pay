@@ -12,7 +12,12 @@
 
   <body>
     <%= render partial: 'layouts/header' %>
-    <%= yield %>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-2"><%= render partial: 'layouts/side_menu' %></div>
+        <div class="col-md-10"><div class="main"><%= yield %></div></div>
+      </div>
+    </div>
     <%= render partial: 'layouts/footer' %>
   </body>
 </html>

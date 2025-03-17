@@ -6,6 +6,10 @@
 
 # Ignore bundler config.
 /.bundle
+/.idea/workspace.xml
+.DS_Store
+app/.DS_Store
+app/assets/.DS_Store
 
 # Ignore all environment files (except templates).
 /.env*

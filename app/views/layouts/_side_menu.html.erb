@@ -1,0 +1,33 @@
+<!-- Sidebar Holder -->
+<nav id="sidebar">
+    <div class="sidebar-header">
+      <a href="<%= transactions_path %>"><h3><span class="fa fa-inr"></span> Daily Pay </h3></a>
+    </div>
+
+    <ul class="list-unstyled components">
+      <%- if params[:controller].include?("admin/") %>
+        <li class="<%= active_class(admin_budgets_path) %>">
+          <a href="<%= admin_budgets_path %>"><span class="fa fa-balance-scale"></span> Budget</a>
+        </li>
+        <li class="<%= active_class(admin_spent_categories_path) %>">
+          <a href="<%= admin_spent_categories_path %>"><span class="fa fa-cubes"></span> Spent categories</a>
+        </li>
+        <li class="<%= active_class(admin_payment_sources_path) %>">
+          <a href="<%= admin_payment_sources_path %>"><span class="fa fa-credit-card"></span> Payment sources</a>
+        </li>
+        <li class="<%= active_class(admin_members_path) %>">
+          <a href="<%= admin_members_path %>"><span class="fa fa-address-book-o"></span> Members</a>
+        </li>
+        <li class="<%= active_class(admin_closures_path) %>">
+          <a href="<%= admin_closures_path %>"><span class="fa fa-calendar-check-o"></span> Closures</a>
+        </li>
+      <%- else %>
+        <li class="<%= active_class(transactions_path) %>">
+          <a href="<%= transactions_path %>"><span class="fa fa-list-alt"></span> Transaction</a>
+        </li>
+        <li class="<%= active_class(reports_path) %>">
+          <a href="<%= reports_path %>"><span class="fa fa-area-chart"></span> Report</a>
+        </li>
+      <%- end %>
+    </ul>
+</nav>

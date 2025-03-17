@@ -1,0 +1,66 @@
+<table class="table">
+  <tr>
+    <td class="col-md-2"><h3 class="title"><span class="fa fa-list-alt"></span> Transactions</h3></td>
+    <td class="col-md-10">
+      <div class="msg">
+        <% if flash[:alert].present? %>
+          <div class="alert alert-danger"><%= flash[:alert] %></div>
+        <% end %>
+        <% if flash[:notice].present? %>
+          <div class="alert alert-success"><%= flash[:notice] %></div>
+        <% end %>
+      </div>
+    </td>
+  </tr>
+</table>
+
+<table class="table table-striped table-bordered">
+  <%= form_with model: @transactions, url: transactions_path, remote: true, html: { id: "transaction-form" } do |f| %>
+    <tr>
+      <td class="col-md-2"><label>Name</label><%= f.text_field :name, placeholder: "Enter the name", value: "", class: "form-control" %></td>
+      <td class="col-md-1"><label>Amount</label><%= f.text_field :amount, placeholder: "amount", value: "", class: "form-control" %></td>
+      <td class="col-md-2"><label>Date</label><%= f.text_field :transaction_date, value: "", class: "form-control datepicker"%></td>
+      <td class="col-md-2"><label>Payment source</label><%= f.select :payment_source_id, payment_type_values, {}, {class: "form-control"} %></td>
+      <td class="col-md-2"><label>Member</label><%= f.select :member_id, member_values, {}, {class: "form-control"} %></td>
+      <td class="col-md-2"><label>Spend Categories</label><%= f.select :spent_category_id, spent_category_values, {}, {class: "form-control"} %></td>
+      <td class="col-md-3"><button type="submit" class="btn btn-primary table-btn">Add</button></td>
+    </tr>
+  <% end %>
+</table>
+
+<table class="table table-striped table-bordered">
+  <% if @transactions.present? %>
+    <thead>
+    <tr>
+      <th class="col-md-2">Name</th>
+      <th class="col-md-1">Amount</th>
+      <th class="col-md-2">Date</th>
+      <th class="col-md-2">Payment source</th>
+      <th class="col-md-2">Member</th>
+      <th class="col-md-2">Category</th>
+      <th class="col-md-3">Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @transactions.each do |transaction| %>
+      <tr>
+        <td><%= transaction.name %></td>
+        <td><%= transaction.amount %></td>
+        <td><%= transaction.transaction_date %></td>
+        <td><%= transaction.payment_source.name %></td>
+        <td><%= transaction.member.name %></td>
+        <td><%= transaction.spent_category.name %></td>
+        <td>
+          <a href="#" class="fa fa-pencil-square-o edit" title="disabled"></a>
+          <a href="#" class="fa fa-trash-o delete" title="disabled"></a>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  <% else %>
+    <tr>
+      <td colspan="3" class="text-center alert alert-info">No transactions are available to display</td>
+    </tr>
+  <% end %>
+</table>
+

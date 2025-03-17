@@ -1,0 +1,54 @@
+<table class="table">
+  <tr>
+    <td class="col-md-2"><h3 class="title"><span class="fa fa-address-book-o"></span> Members</h3></td>
+
+    <td class="col-md-10">
+      <div class="msg">
+        <% if flash[:alert].present? %>
+          <div class="alert alert-danger"><%= flash[:alert] %></div>
+        <% end %>
+        <% if flash[:notice].present? %>
+          <div class="alert alert-success"><%= flash[:notice] %></div>
+        <% end %>
+      </div>
+    </td>
+  </tr>
+</table>
+
+<table class="table table-striped table-bordered">
+  <%= form_with model: @members, url: admin_members_path, remote: true, html: { id: "member-form" } do |f| %>
+  <tr>
+    <td class="col-md-5"><label>Name</label><%= f.text_field :name, placeholder: "Enter the name", value: "", class: "form-control" %></td>
+    <td class="col-md-5"><label>Relationship</label><%= f.select :relationship, relationship_values, {}, {class: "form-control"} %></td>
+    <td class="col-md-2"><button type="submit" class="btn btn-primary table-btn">Add</button></td>
+  </tr>
+  <% end %>
+</table>
+
+<table class="table table-striped table-bordered">
+  <% if @members.present? %>
+    <thead>
+    <tr>
+      <th class="col-md-5">Name</th>
+      <th class="col-md-5">Relationship</th>
+      <th class="col-md-2">Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @members.each do |member| %>
+      <tr>
+        <td><%= member.name %></td>
+        <td><%= member.relationship %></td>
+        <td>
+          <a href="#" class="fa fa-pencil-square-o edit" title="disabled"></a>
+          <a href="#" class="fa fa-trash-o delete" title="disabled"></a>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  <% else %>
+    <tr>
+      <td colspan="3" class="text-center alert alert-info">No members are available to display</td>
+    </tr>
+  <% end %>
+</table>
