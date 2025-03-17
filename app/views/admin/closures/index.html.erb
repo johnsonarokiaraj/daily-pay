@@ -18,7 +18,7 @@
   <%= form_with model: @closures, url: admin_closures_path, remote: true, html: { id: "closure-form" } do |f| %>
   <tr>
     <td class="col-md-5"><label>Name</label><%= f.text_field :name, placeholder: "Enter the name", value: "", class: "form-control" %></td>
-    <td class="col-md-5"><label>Date</label><%= f.text_field :transaction_date, value: "", class: "form-control datepicker"%></td>
+    <td class="col-md-5"><label>Date</label><%= f.text_field :closed_at, value: "", class: "form-control datepicker"%></td>
     <td class="col-md-2"><button type="submit" class="btn btn-primary table-btn">Add</button></td>
   </tr>
   <% end %>
@@ -29,7 +29,7 @@
     <thead>
     <tr>
       <th class="col-md-5">Name</th>
-      <th class="col-md-5">Relationship</th>
+      <th class="col-md-5">Closed at</th>
       <th class="col-md-2">Action</th>
     </tr>
     </thead>
@@ -37,7 +37,7 @@
     <% @closures.each do |closure| %>
       <tr>
         <td><%= closure.name %></td>
-        <td><%= closure.relationship %></td>
+        <td><%= closure.closed_at %></td>
         <td>
           <a href="#" class="fa fa-pencil-square-o edit" title="disabled"></a>
           <a href="#" class="fa fa-trash-o delete" title="disabled"></a>

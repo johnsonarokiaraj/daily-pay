@@ -14,31 +14,146 @@
   </tr>
 </table>
 
-<table class="table table-striped table-bordered">
-    <tr>
-      <td class="col-md-2"><label>Name</label></td>
-    </tr>
-</table>
+<div class="row">
+  <div class="col-md-6">
+    <table class="table table-striped table-bordered"><tr><td class="col-md-2"><label>Payment source</label></td></tr></table>
+    <div style="width: 100%;"><canvas id="payment_source"></canvas></div>
+  </div>
+  <div class="col-md-6">
+    <table class="table table-striped table-bordered"><tr><td class="col-md-2"><label>Spend Categories</label></td></tr></table>
+    <div style="width: 100%;"><canvas id="spent_category"></canvas></div>
+  </div>
+</div>
+<br><br>
 
-<table class="table table-striped table-bordered">
-    <thead>
-    <tr>
-      <th class="col-md-2">Name</th>
-      <th class="col-md-1">Amount</th>
-      <th class="col-md-2">Date</th>
-      <th class="col-md-2">Payment source</th>
-      <th class="col-md-2">Member</th>
-      <th class="col-md-2">Category</th>
-      <th class="col-md-3">Action</th>
-    </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>
-          <a href="#" class="fa fa-pencil-square-o edit" title="disabled"></a>
-          <a href="#" class="fa fa-trash-o delete" title="disabled"></a>
-        </td>
-      </tr>
-    </tbody>
-</table>
+<div class="row">
+  <div class="col-md-6">
+    <table class="table table-striped table-bordered"><tr><td class="col-md-2"><label>Member</label></td></tr></table>
+    <div style="width: 100%;"><canvas id="member"></canvas></div>
+  </div>
+</div>
 
+<script>
+    $(document).ready(function() {
+        // Payment source
+        (async function() {
+            const data = <%= @payment_sources.to_json.html_safe %>
+
+            new Chart(
+                document.getElementById('payment_source'),
+                {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(row => row.key),
+                        datasets: [
+                            {
+                                label: 'Report by payment source',
+                                data: data.map(row => row.value),
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.2)',
+                                    'rgba(255, 159, 64, 0.2)',
+                                    'rgba(255, 205, 86, 0.2)',
+                                    'rgba(75, 192, 192, 0.2)',
+                                    'rgba(54, 162, 235, 0.2)',
+                                    'rgba(153, 102, 255, 0.2)',
+                                    'rgba(201, 203, 207, 0.2)'
+                                ],
+                                borderColor: [
+                                    'rgb(255, 99, 132)',
+                                    'rgb(255, 159, 64)',
+                                    'rgb(255, 205, 86)',
+                                    'rgb(75, 192, 192)',
+                                    'rgb(54, 162, 235)',
+                                    'rgb(153, 102, 255)',
+                                    'rgb(201, 203, 207)'
+                                ],
+                                borderWidth: 1
+                            }
+                        ]
+                    }
+                }
+            );
+        })();
+
+        // spent categories
+        (async function() {
+            const data = <%= @spent_categories.to_json.html_safe %>
+
+                new Chart(
+                    document.getElementById('spent_category'),
+                    {
+                        type: 'doughnut',
+                        data: {
+                            labels: data.map(row => row.key),
+                            datasets: [
+                                {
+                                    label: 'Report by payment source',
+                                    data: data.map(row => row.value),
+                                    backgroundColor: [
+                                        'rgba(255, 99, 132, 0.2)',
+                                        'rgba(255, 159, 64, 0.2)',
+                                        'rgba(255, 205, 86, 0.2)',
+                                        'rgba(75, 192, 192, 0.2)',
+                                        'rgba(54, 162, 235, 0.2)',
+                                        'rgba(153, 102, 255, 0.2)',
+                                        'rgba(201, 203, 207, 0.2)'
+                                    ],
+                                    borderColor: [
+                                        'rgb(255, 99, 132)',
+                                        'rgb(255, 159, 64)',
+                                        'rgb(255, 205, 86)',
+                                        'rgb(75, 192, 192)',
+                                        'rgb(54, 162, 235)',
+                                        'rgb(153, 102, 255)',
+                                        'rgb(201, 203, 207)'
+                                    ],
+                                    borderWidth: 1
+                                }
+                            ]
+                        }
+                    }
+                );
+        })();
+
+        //member
+        (async function() {
+            const data = <%= @members.to_json.html_safe %>
+
+              new Chart(
+                document.getElementById('member'),
+                {
+                    type: 'polarArea',
+                    data: {
+                        labels: data.map(row => row.key),
+                        datasets: [
+                            {
+                                label: 'Report by payment source',
+                                data: data.map(row => row.value),
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.2)',
+                                    'rgba(255, 159, 64, 0.2)',
+                                    'rgba(255, 205, 86, 0.2)',
+                                    'rgba(75, 192, 192, 0.2)',
+                                    'rgba(54, 162, 235, 0.2)',
+                                    'rgba(153, 102, 255, 0.2)',
+                                    'rgba(201, 203, 207, 0.2)'
+                                ],
+                                borderColor: [
+                                    'rgb(255, 99, 132)',
+                                    'rgb(255, 159, 64)',
+                                    'rgb(255, 205, 86)',
+                                    'rgb(75, 192, 192)',
+                                    'rgb(54, 162, 235)',
+                                    'rgb(153, 102, 255)',
+                                    'rgb(201, 203, 207)'
+                                ],
+                                borderWidth: 1
+                            }
+                        ]
+                    }
+                }
+              );
+        })();
+
+    });
+</script>

@@ -20,7 +20,7 @@
       <td class="col-md-2"><label>Name</label><%= f.text_field :name, placeholder: "Enter the name", value: "", class: "form-control" %></td>
       <td class="col-md-1"><label>Amount</label><%= f.text_field :amount, placeholder: "amount", value: "", class: "form-control" %></td>
       <td class="col-md-2"><label>Date</label><%= f.text_field :transaction_date, value: "", class: "form-control datepicker"%></td>
-      <td class="col-md-2"><label>Payment source</label><%= f.select :payment_source_id, payment_type_values, {}, {class: "form-control"} %></td>
+      <td class="col-md-2"><label>Payment source</label><%= f.select :payment_source_id, payment_source_values, {}, {class: "form-control"} %></td>
       <td class="col-md-2"><label>Member</label><%= f.select :member_id, member_values, {}, {class: "form-control"} %></td>
       <td class="col-md-2"><label>Spend Categories</label><%= f.select :spent_category_id, spent_category_values, {}, {class: "form-control"} %></td>
       <td class="col-md-3"><button type="submit" class="btn btn-primary table-btn">Add</button></td>

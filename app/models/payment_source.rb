@@ -1,5 +1,5 @@
 class PaymentSource < ApplicationRecord
-  PAYMENT_TYPE = ["credit card", "debit card", "cash"]
+  PAYMENT_TYPE = ["credit", "debit", "cash"]
 
   has_many :transactions
 

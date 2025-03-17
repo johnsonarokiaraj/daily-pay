@@ -12,6 +12,10 @@ module ApplicationHelper
   end
 
   def payment_type_values
+    PaymentSource::PAYMENT_TYPE
+  end
+
+  def payment_source_values
     PaymentSource.all.map{|m| [m.name, m.id]}
   end
 
