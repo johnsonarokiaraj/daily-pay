@@ -5,7 +5,7 @@
 }
 
 .top-navbar {
-  border-bottom: 1px solid #7385D5;
+  border-bottom: 1px solid $web-color;
   color: #FFF;
   a{
     color: #FFF;
@@ -41,7 +41,7 @@ a{
 
 .bd-navbar {
   min-height: 4rem;
-  background-color: #7385D5;
+  background-color: $web-color;
   box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .05), inset 0 -1px 0 rgba(0, 0, 0, .1);
 }
 
@@ -68,4 +68,16 @@ a{
 
 .title{
   color: $active-color;
+}
+
+.tag-1{
+  background-color: #8286bf;
+  padding: 6px;
+}
+
+.date-link{
+  font-size: 10px;
+  text-decoration: underline;
+  padding: 5px;
+  color: $web-color;
 }
