@@ -1,5 +1,7 @@
 class Transaction < ApplicationRecord
 
+  acts_as_taggable_on :tags
+  
   belongs_to :member
   belongs_to :payment_source
   belongs_to :spent_category
