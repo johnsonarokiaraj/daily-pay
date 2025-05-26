@@ -1,10 +1,30 @@
 class ReportsController < ApplicationController
   def index
-    report_1 = Transaction.joins(:payment_source).group("payment_sources.name").sum(:amount)
-    report_2 = Transaction.joins(:spent_category).group("spent_categories.name").sum(:amount)
-    report_3 = Transaction.joins(:member).group("members.name").sum(:amount)
-    @payment_sources = report_1.map { |key, value| { key: key, value: value } }
-    @spent_categories = report_2.map { |key, value| { key: key, value: value } }
-    @members = report_3.map { |key, value| { key: key, value: value } }
+    @tag_amounts = tag_amount_process
   end
+
+  def tags
+    @tags = ActsAsTaggableOn::Tag.all
+  end
+
+
+
+
+  private
+
+  def tag_amount_process
+    tag_amounts_data = ActsAsTaggableOn::Tagging
+                         .joins("INNER JOIN transactions ON taggings.taggable_id = transactions.id AND taggings.taggable_type = 'Transaction'")
+                         .joins("INNER JOIN tags ON taggings.tag_id = tags.id")
+                         .group("tags.name")
+                         .sum("transactions.amount")
+
+    # Format result into array of hashes if needed
+    tag_amounts_data.map { |tag_name, total| { key: tag_name, value: total } }
+  end
+
 end
+
+
+
+

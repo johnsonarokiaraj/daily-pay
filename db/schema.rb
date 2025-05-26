@@ -12,37 +12,18 @@
 
 ActiveRecord::Schema[7.1].define(version: 2025_05_13_183046) do
   create_table "budgets", force: :cascade do |t|
-    t.string "name", limit: 191, null: false
-    t.integer "limit", null: false
-    t.integer "member_id", null: false
-    t.integer "spent_category_id", null: false
+    t.integer "tag_id", null: false
+    t.integer "amount", null: false
+    t.date "start_date", null: false
+    t.date "end_date", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "closures", force: :cascade do |t|
     t.string "name", limit: 191, null: false
-    t.date "closed_at", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "members", force: :cascade do |t|
-    t.string "name", limit: 191, null: false
-    t.string "relationship", limit: 191, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "payment_sources", force: :cascade do |t|
-    t.string "name", limit: 191, null: false
-    t.string "payment_type", limit: 191, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "spent_categories", force: :cascade do |t|
-    t.string "name", limit: 191, null: false
+    t.date "start_date", null: false
+    t.date "end_date", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -80,9 +61,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_05_13_183046) do
 
   create_table "transactions", force: :cascade do |t|
     t.string "name", limit: 191, null: false
-    t.integer "member_id", null: false
-    t.integer "payment_source_id", null: false
-    t.integer "spent_category_id", null: false
     t.integer "amount", null: false
     t.date "transaction_date", null: false
     t.datetime "created_at", null: false

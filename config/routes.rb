@@ -8,15 +8,14 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   root "transactions#index"
 
-  namespace :admin do
-    resources :budgets
-    resources :closures
-    resources :members
-    resources :payment_sources
-    resources :spent_categories
-  end
 
   resources :transactions
-  resources :reports
+  resources :reports do
+    collection do
+      get 'tags'
+    end
+  end
+  resources :budgets
+  resources :closures
 
 end

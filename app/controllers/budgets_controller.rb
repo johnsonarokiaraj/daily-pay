@@ -1,4 +1,4 @@
-class Admin::BudgetsController < ApplicationController
+class BudgetsController < ApplicationController
   def index
     @budgets = Budget.all
   end
@@ -7,7 +7,7 @@ class Admin::BudgetsController < ApplicationController
     @budget = Budget.new(budget_params)
     msg = @budget.save ? { notice: "Spent category added successfully." } : { alert: @budget.errors.full_messages[0] }
 
-    redirect_to admin_budgets_path, **msg
+    redirect_to budgets_path, **msg
   end
 
   private

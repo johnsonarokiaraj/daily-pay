@@ -1,8 +1,7 @@
 class Budget < ApplicationRecord
 
   validate :validate_budget
-  belongs_to :member
-  belongs_to :spent_category
+  belongs_to :tags
 
   def validate_budget
     validate_name(:name, "Budget name")

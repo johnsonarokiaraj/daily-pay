@@ -19,12 +19,27 @@ $(document).on("ajax:success", "#year-form", function(event) {
 });
 
 $(document).ready(function () {
-
     var $input = $('.tag');
-    var tagWhitelist = JSON.parse($input.attr('data-tags'));
+    var dataTags = $input.attr('data-tags');
 
-    var tagify = new Tagify($input[0], {
-        dropdown: { enabled: 0 },
-        whitelist: tagWhitelist
-    });
+    try {
+        var tagWhitelist = JSON.parse(dataTags);
+        var tagify = new Tagify($input[0], {
+            dropdown: { enabled: 0 },
+            whitelist: tagWhitelist
+        });
+
+        // 💡 Convert Tagify JSON to string before form submit
+        $('.tag-form').on('submit', function () {
+            var tagsArray = tagify.value; // array of { value: 'tag' }
+            var tagString = tagsArray.map(function (tag) {
+                return tag.value;
+            }).join(',');
+
+            $input.val(tagString); // overwrite input value
+        });
+
+    } catch (e) {
+        console.error("Invalid JSON in data-tags:", e);
+    }
 });
