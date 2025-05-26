@@ -18,8 +18,8 @@
   <% if @tags.present? %>
     <thead>
     <tr>
-      <th class="col-md-9">Tag Name</th>
-      <th class="col-md-3">Action</th>
+      <th class="col-md-10">Tag Name</th>
+      <th class="col-md-2">Action</th>
     </tr>
     </thead>
     <tbody>
@@ -27,8 +27,7 @@
       <tr>
         <td><%= tag.name %></td>
         <td>
-          <a href="#" class="fa fa-pencil-square-o edit" title="disabled"></a>
-          <a href="#" class="fa fa-trash-o delete" title="disabled"></a>
+          <%= link_to '', tag_path(tag.name), method: :delete, class: 'fa fa-trash-o text-danger', data: { confirm: 'Really delete this tag?' }, title: 'Delete' %>
         </td>
       </tr>
     <% end %>

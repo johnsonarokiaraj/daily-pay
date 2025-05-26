@@ -7,4 +7,7 @@ module ApplicationHelper
     'active' if condition
   end
 
+  def format_date(date)
+    date.try(:strftime, "%d-%m-%Y")
+  end
 end

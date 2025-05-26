@@ -47,11 +47,8 @@ a{
 
 
 .footer {
-  border-top: 1px solid #9b75dd;
-  text-align: center;
-  padding-top: 10px;
+  border-top: 10px solid $web-color;
   position: fixed;
-  height: 40px;
   bottom: 0;
   width: 100%;
 }

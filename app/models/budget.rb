@@ -1,11 +1,11 @@
 class Budget < ApplicationRecord
 
+  belongs_to :tag, class_name: 'ActsAsTaggableOn::Tag', foreign_key: 'tag_id'
+
   validate :validate_budget
-  belongs_to :tags
 
   def validate_budget
-    validate_name(:name, "Budget name")
-    validate_limit(:limit, "Limit")
+    validate_limit(:amount, "Limit")
   end
 
 end

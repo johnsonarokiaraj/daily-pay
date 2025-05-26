@@ -17,10 +17,11 @@
 <table class="table table-striped table-bordered">
   <%= form_with model: @budgets, url: budgets_path, remote: true, html: { id: "budget-form" } do |f| %>
   <tr>
-    <td class="col-md-4"><label>Tag</label><%= f.text_field :name, placeholder: "Enter the tag", value: "", class: "form-control" %></td>
-    <td class="col-md-2"><label>amount</label><%= f.text_field :limit, placeholder: "Enter the limit", value: "", class: "form-control" %></td>
-    <td class="col-md-2"><label>Start date</label><%= f.text_field :start_date, value: "", class: "form-control datepicker"%></td>
-    <td class="col-md-2"><label>End date</label><%= f.text_field :end_date, value: "", class: "form-control datepicker"%></td>
+    <td class="col-md-4"><label>Tag</label><%= f.select :tag_id, options_for_select(@all_tags), { prompt: "Select a tag" }, class: "form-control" %>
+    </td>
+    <td class="col-md-2"><label>Amount</label><%= f.text_field :amount, placeholder: "Enter the limit", value: "", class: "form-control" %></td>
+    <td class="col-md-2"><label>Start date</label><%= f.text_field :start_date, value: "", class: "form-control datepicker month-start-date"%></td>
+    <td class="col-md-2"><label>End date</label><%= f.text_field :end_date, value: "", class: "form-control datepicker month-end-date"%></td>
     <td class="col-md-1"><button type="submit" class="btn btn-primary table-btn">Add</button></td>
   </tr>
   <% end %>
@@ -30,23 +31,23 @@
   <% if @budgets.present? %>
     <thead>
     <tr>
-      <th class="col-md-3">Name</th>
-      <th class="col-md-2">Limit</th>
-      <th class="col-md-3">Member name</th>
-      <th class="col-md-3">Spent category</th>
+      <th class="col-md-3">Tag</th>
+      <th class="col-md-2">Amount</th>
+      <th class="col-md-3">Start date</th>
+      <th class="col-md-3">End date</th>
       <th class="col-md-3">Action</th>
     </tr>
     </thead>
     <tbody>
     <% @budgets.each do |budget| %>
       <tr>
-        <td><%= budget.name %></td>
-        <td><%= budget.limit %></td>
-        <td><%= budget.member.name %></td>
-        <td><%= budget.spent_category.name %></td>
+        <td><%= budget.tag.name %></td>
+        <td><%= budget.amount %></td>
+        <td><%= budget.start_date %></td>
+        <td><%= budget.end_date %></td>
         <td>
-          <a href="#" class="fa fa-pencil-square-o edit" title="disabled"></a>
-          <a href="#" class="fa fa-trash-o delete" title="disabled"></a>
+          <a href="#" class="fa fa-pencil-square-o" title="disabled"></a>
+          <%= link_to '', budget_path(budget.id), method: :delete, class: 'fa fa-trash-o text-danger', data: { confirm: 'Really delete this tag?' }, title: 'Delete' %>
         </td>
       </tr>
     <% end %>

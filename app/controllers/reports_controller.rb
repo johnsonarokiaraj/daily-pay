@@ -3,13 +3,6 @@ class ReportsController < ApplicationController
     @tag_amounts = tag_amount_process
   end
 
-  def tags
-    @tags = ActsAsTaggableOn::Tag.all
-  end
-
-
-
-
   private
 
   def tag_amount_process

@@ -10,12 +10,9 @@ Rails.application.routes.draw do
 
 
   resources :transactions
-  resources :reports do
-    collection do
-      get 'tags'
-    end
-  end
+  resources :reports
   resources :budgets
   resources :closures
+  resources :tags
 
 end

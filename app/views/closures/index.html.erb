@@ -18,8 +18,8 @@
   <%= form_with model: @closures, url: closures_path, html: { id: "closure-form" } do |f| %>
   <tr>
     <td class="col-md-5"><label>Name</label><%= f.text_field :name, placeholder: "Enter the name", value: "", class: "form-control" %></td>
-    <td class="col-md-3"><label>Start date</label><%= f.text_field :start_date, value: "", class: "form-control datepicker"%></td>
-    <td class="col-md-3"><label>End date</label><%= f.text_field :end_date, value: "", class: "form-control datepicker"%></td>
+    <td class="col-md-3"><label>Start date</label><%= f.text_field :start_date, value: "", class: "form-control datepicker month-start-date"%></td>
+    <td class="col-md-3"><label>End date</label><%= f.text_field :end_date, value: "", class: "form-control datepicker month-end-date"%></td>
     <td class="col-md-2"><button type="submit" class="btn btn-primary table-btn">Add</button></td>
   </tr>
   <% end %>
@@ -39,11 +39,11 @@
     <% @closures.each do |closure| %>
       <tr>
         <td><%= closure.name %></td>
-        <td><%= closure.start_date %></td>
-        <td><%= closure.end_date %></td>
+        <td><%= format_date(closure.start_date) %></td>
+        <td><%= format_date(closure.end_date) %></td>
         <td>
-          <a href="#" class="fa fa-pencil-square-o edit" title="disabled"></a>
-          <a href="#" class="fa fa-trash-o delete" title="disabled"></a>
+          <a href="#" class="fa fa-pencil-square-o" title="disabled"></a>
+          <a href="#" class="fa fa-lightbulb-o delete" title="<%= closure.id %>"></a>
         </td>
       </tr>
     <% end %>
