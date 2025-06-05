@@ -1,6 +1,10 @@
 class TransactionsController < ApplicationController
+
+  before_action :load_closure, only: [:index]
   def index
-    @transactions = Transaction.all
+    start_date = @closure.start_date
+    end_date = @closure.end_date
+    @transactions = Transaction.where(transaction_date: start_date..end_date).order(transaction_date: :desc, created_at: :desc)
   end
 
   def create
@@ -32,6 +36,11 @@ class TransactionsController < ApplicationController
   private
 
   def transaction_params
-    params.require(:transaction).permit(:name, :amount, :transaction_date, :tag_list)
+    params.require(:transaction).permit(:name, :amount, :transaction_date, :tag_list, :closure_id)
+  end
+
+  def load_closure
+    closure_id = params.dig(:transaction, :closure_id) || params[:closure_id]
+    @closure = Closure.find_by(id: closure_id) || Closure.last
   end
 end
