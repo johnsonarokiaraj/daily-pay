@@ -14,7 +14,4 @@ Rails.application.routes.draw do
   resources :budgets
   resources :closures
   resources :tags
-
-  get "report_annual" => "reports#annual"
-
 end

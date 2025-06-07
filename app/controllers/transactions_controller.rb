@@ -2,9 +2,11 @@ class TransactionsController < ApplicationController
 
   before_action :load_closure, only: [:index]
   def index
-    start_date = @closure.start_date
-    end_date = @closure.end_date
-    @transactions = Transaction.where(transaction_date: start_date..end_date).order(transaction_date: :desc, created_at: :desc)
+    @start_date = @closure.try(:start_date) || DateTime.now
+    @end_date = @closure.try(:end_date) || DateTime.now
+    @transactions = Transaction.where(transaction_date: @start_date..@end_date).order(transaction_date: :desc, created_at: :desc)
+    @total = @transactions.map{|t| t.amount}.sum
+    @closure_options = Closure.all.map{|f| [f.name, f.id]}
   end
 
   def create
@@ -43,4 +45,5 @@ class TransactionsController < ApplicationController
     closure_id = params.dig(:transaction, :closure_id) || params[:closure_id]
     @closure = Closure.find_by(id: closure_id) || Closure.last
   end
+
 end

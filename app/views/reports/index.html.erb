@@ -27,6 +27,9 @@
     </table>
   </div>
   <div class="col-md-6"><div style="width: 100%;"><canvas id="payment_source"></canvas></div></div>
+
+  <div class="col-md-6"><div style="width: 100%;"><canvas id="annual_source"></canvas></div></div>
+
 </div>
 
 <script>
@@ -65,5 +68,38 @@
             );
         })();
 
+        // Annual source
+        (async function() {
+            const data = <%= @annual_tag_amounts.to_json.html_safe %>
+            const backgroundColors = data.map((_, i) => `hsl(${i * 17 % 360}, 70%, 80%)`);
+            const borderColors = data.map((_, i) => `hsl(${i * 17 % 360}, 70%, 50%)`);
+
+            new Chart(
+                document.getElementById('annual_source'),
+                {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(row => row.key),
+                        datasets: [
+                            {
+                                label: 'Report by tags',
+                                data: data.map(row => row.value),
+                                backgroundColor: backgroundColors,
+                                borderColor: borderColors,
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        indexAxis: 'y', // this flips the chart to horizontal
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                }
+            );
+        })();
     });
 </script>

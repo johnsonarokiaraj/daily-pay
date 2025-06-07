@@ -2,18 +2,19 @@ class ReportsController < ApplicationController
 
   before_action :load_date
   def index
-    @start_date = @closure.start_date
-    @end_date = @closure.end_date
     @tag_amounts = tag_amount_process
-  end
 
-  def annual
+    #annual
     @start_date = Date.current.beginning_of_year
     @end_date = Date.current.end_of_year
-    @tag_amounts = tag_amount_process
+    @annual_tag_amounts = tag_amount_process
   end
 
   private
+
+  def reports_params
+    params.permit(:start_date, :end_date)
+  end
 
   def tag_amount_process
     tag_amounts_data = ActsAsTaggableOn::Tagging
@@ -29,7 +30,15 @@ class ReportsController < ApplicationController
 
   def load_date
     @closure = Closure.last
+    if reports_params[:start_date].present? && reports_params[:end_date].present?
+      @start_date = reports_params[:start_date]
+      @end_date = reports_params[:end_date]
+    else
+      @start_date = @closure.start_date
+      @end_date = @closure.end_date
+    end
   end
+
 
 end
 
