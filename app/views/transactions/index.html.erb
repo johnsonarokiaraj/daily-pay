@@ -36,16 +36,23 @@
   <% end %>
 </table>
 
-<table class="table table-striped table-bordered">
-  <%= form_with model: @transactions, url: transactions_path, remote: true, html: { id: "transaction-form", class: "tag-form" } do |f| %>
-    <tr>
-      <td class="col-md-2">
-        <%= f.select :name, options_for_select(@closure_options), { prompt: "Select a name" }, class: "form-control" %>
-      </td>
-      <td class="col-md-3"><button type="submit" class="btn btn-primary table-btn">Change</button></td>
-    </tr>
-  <% end %>
-</table>
+
+<div class="row" style="margin-bottom: 20px;">
+  <div class="col-md-9"></div>
+  <div class="col-md-3">
+    <div class="row">
+      <%= form_with model: @transactions, url: transactions_path, remote: true, html: { id: "transaction-form", class: "tag-form w-100" } do |f| %>
+        <div class="col-md-8">
+            <%= f.select :name, options_for_select(@closure_options), { prompt: "Select a name" }, class: "form-control" %>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100">Apply</button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
 
 <table class="table table-striped table-bordered">
   <% if @transactions.present? %>
@@ -53,7 +60,7 @@
     <tr>
       <th class="col-md-1">Date</th>
       <th class="col-md-3">Name</th>
-      <th class="col-md-2">Amount <span class="badge badge-light"><%= @total %></span></th>
+      <th class="col-md-2">Amount <span class="badge badge-danger" style="color: #fff;background-color: #dc3545"><%= @total %></span></th>
       <th>Tags</th>
       <th class="col-md-1" >&nbsp;</th>
     </tr>
@@ -82,3 +89,20 @@
     </tr>
   <% end %>
 </table>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const filterIcon = document.getElementById("filter-icon");
+        const filterTable = document.getElementById("filter-table");
+
+        filterIcon.addEventListener("click", function (e) {
+            e.preventDefault();
+            if (filterTable.style.display === "none") {
+                filterTable.style.display = "block";
+            } else {
+                filterTable.style.display = "none";
+            }
+        });
+    });
+
+</script>
