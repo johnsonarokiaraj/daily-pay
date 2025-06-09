@@ -2,6 +2,8 @@ class ReportsController < ApplicationController
 
   before_action :load_date
   def index
+    @start_date = Date.current.beginning_of_month
+    @end_date = Date.current.end_of_month
     @tag_amounts = tag_amount_process
 
     #annual
@@ -29,16 +31,11 @@ class ReportsController < ApplicationController
   end
 
   def load_date
-    @closure = Closure.last
     if reports_params[:start_date].present? && reports_params[:end_date].present?
       @start_date = reports_params[:start_date]
       @end_date = reports_params[:end_date]
-    else
-      @start_date = @closure.start_date
-      @end_date = @closure.end_date
     end
   end
-
 
 end
 
