@@ -36,7 +36,11 @@ class TransactionsController < ApplicationController
 
   private
   def get_transactions
-    transactions = @filter[:tags].present? ?   Transaction.tagged_with(@filter[:tags]) : Transaction.all
+    transactions = Transaction.all
+    if @filter[:tags].present?
+      tags = JSON.parse(@filter[:tags])
+      transactions =  Transaction.tagged_with(tags)
+    end
     transactions.where(transaction_date: @start_date..@end_date).order(transaction_date: :desc, created_at: :desc)
   end
 

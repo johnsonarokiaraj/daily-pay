@@ -2,14 +2,12 @@ class ReportsController < ApplicationController
 
   before_action :load_date
   def index
-    @start_date = Date.current.beginning_of_month
-    @end_date = Date.current.end_of_month
-    @tag_amounts = tag_amount_process
+    @start_date = params[:start_date] || Date.current.beginning_of_month
+    @end_date = params[:end_date] || Date.current.end_of_month
+    @tag_amounts = tag_amount_process(@start_date , @end_date)
 
     #annual
-    @start_date = Date.current.beginning_of_year
-    @end_date = Date.current.end_of_year
-    @annual_tag_amounts = tag_amount_process
+    @annual_tag_amounts = tag_amount_process(Date.current.beginning_of_year, Date.current.end_of_year)
     @filter = params[:filter]
   end
 
@@ -19,11 +17,11 @@ class ReportsController < ApplicationController
     params.permit(:start_date, :end_date)
   end
 
-  def tag_amount_process
+  def tag_amount_process(start_date, end_date)
     taggings = ActsAsTaggableOn::Tagging
                  .joins("INNER JOIN transactions ON taggings.taggable_id = transactions.id AND taggings.taggable_type = 'Transaction'")
                  .joins("INNER JOIN tags ON taggings.tag_id = tags.id")
-                 .where("transactions.transaction_date BETWEEN :start_date AND :end_date", start_date: @start_date, end_date: @end_date)
+                 .where("transactions.transaction_date BETWEEN ? AND ?", start_date.to_date, end_date.to_date)
 
     if params[:filter].present?
       taggings = taggings.where("tags.name = ?", params[:filter])
