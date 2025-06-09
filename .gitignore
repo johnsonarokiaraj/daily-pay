@@ -6,10 +6,12 @@
 
 # Ignore bundler config.
 /.bundle
-/.idea/workspace.xml
+/.idea/*
+.idea/daily-pay.iml
 .DS_Store
 app/.DS_Store
 app/assets/.DS_Store
+db/schema.rb
 
 # Ignore all environment files (except templates).
 /.env*

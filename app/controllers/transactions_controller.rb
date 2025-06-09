@@ -1,9 +1,10 @@
 class TransactionsController < ApplicationController
 
   def index
-    @start_date = Date.current.beginning_of_month
-    @end_date = Date.current.end_of_month
-    @transactions = Transaction.where(transaction_date: @start_date..@end_date).order(transaction_date: :desc, created_at: :desc)
+    @start_date = params[:start_date] || Date.current.beginning_of_month
+    @end_date = params[:end_date] || Date.current.end_of_month
+    @filter = params[:filter] || {}
+    @transactions = get_transactions
     @total = @transactions.map{|t| t.amount}.sum
   end
 
@@ -34,9 +35,16 @@ class TransactionsController < ApplicationController
   end
 
   private
+  def get_transactions
+    transactions = @filter[:tags].present? ?   Transaction.tagged_with(@filter[:tags]) : Transaction.all
+    transactions.where(transaction_date: @start_date..@end_date).order(transaction_date: :desc, created_at: :desc)
+  end
 
   def transaction_params
     params.require(:transaction).permit(:name, :amount, :transaction_date, :tag_list, :closure_id)
   end
 
+  def permitted_params
+    params.permit(:start_date, :end_date, :filter)
+  end
 end

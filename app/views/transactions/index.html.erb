@@ -46,6 +46,19 @@
   <% end %>
 </table>
 
+<%= form_with url: transactions_path, method: :get, local: true do %>
+  <div class="form-group">
+    <label for="filter_tags">Filter by Tags:</label>
+    <%= select_tag "filter[tags][]",
+                   options_for_select(ActsAsTaggableOn::Tag.pluck(:name), params.dig(:filter, :tags)),
+                   multiple: true,
+                   include_blank: "All",
+                   class: "form-control",
+                   id: "filter_tags" %>
+    <%= submit_tag "Filter", class: "btn btn-primary" %>
+  </div>
+<% end %>
+
 <table class="table table-striped table-bordered">
   <% if @transactions.present? %>
     <thead>
