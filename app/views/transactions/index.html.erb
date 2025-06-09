@@ -31,7 +31,7 @@
       <td class="col-md-2"><label>Name</label><%= f.text_field :name, placeholder: "Enter the name", value: "", class: "form-control" %></td>
       <td class="col-md-1"><label>Amount</label><%= f.text_field :amount, placeholder: "amount", value: "", class: "form-control" %></td>
       <td class="col-md-6"><label>Tags</label><%= f.text_field :tag_list, placeholder: "type tags", value: "", class: "form-control tag", data: { tags: @tag_names.to_json } %></td>
-      <td class="col-md-3"><button type="submit" class="btn btn-primary table-btn">Add</button></td>
+      <td class="col-md-1"><button type="submit" class="btn btn-primary table-btn">Add</button></td>
     </tr>
   <% end %>
 </table>
@@ -39,19 +39,20 @@
 <table class="table table-striped table-bordered">
   <%= form_with model: @transactions, url: transactions_path, method: :get, html: { class: "tag-form" } do |f| %>
     <tr>
-      <td class="col-md-3">
+      <td class="col-md-2">
         <label>Start date</label>
         <%= f.text_field :start_date, value: "", class: "form-control datepicker month-start-date" %>
       </td>
-      <td class="col-md-3">
+      <td class="col-md-2">
         <label>End date</label>
         <%= f.text_field :end_date, value: "", class: "form-control datepicker month-end-date" %>
       </td>
-      <td class="col-md-4">
+      <td class="col-md-1"><label>Add date</label><%= f.check_box :allow_date, value: "", class: "form-control" %></td>
+      <td class="col-md-6">
         <label>Filter by Tags</label>
-        <%= f.text_field :tag_list, placeholder: "type tags", value: "", class: "form-control tag", data: { tags: @tag_names.to_json } %>
+        <%= f.text_field :tag_list, placeholder: "type tags", value: @tag_list, class: "form-control tag", data: { tags: @tag_names.to_json } %>
       </td>
-      <td class="col-md-2">
+      <td class="col-md-1">
         <button type="submit" class="btn btn-primary table-btn">Apply</button>
       </td>
     </tr>

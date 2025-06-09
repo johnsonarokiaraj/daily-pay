@@ -159,7 +159,7 @@ function setDateInField(selector, date) {
     $(selector).datepicker('update', formatted).val(formatted);
 }
 
-$(document).on('submit', '.tag-form', function () {
+$(document).on('submit', '.tag-form, .filter-form', function () {
     $('.tag').each(function () {
         const tagify = this.tagify;
         if (tagify) {

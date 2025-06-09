@@ -1,11 +1,16 @@
 class TransactionsController < ApplicationController
 
   def index
-    @start_date = params[:start_date] || Date.current.beginning_of_month
-    @end_date = params[:end_date] || Date.current.end_of_month
-    @filter = params[:filter] || {}
+    @start_date = Date.current.beginning_of_month
+    @end_date = Date.current.end_of_month
+
+    if transaction_params[:allow_date].present? && transaction_params[:allow_date] != "0"
+      @start_date = transaction_params[:start_date] || Date.current.beginning_of_month
+      @end_date = transaction_params[:end_date] || Date.current.end_of_month
+    end
     @transactions = get_transactions
     @total = @transactions.map{|t| t.amount}.sum
+    @tag_list = transaction_params[:tag_list]
   end
 
   def create
@@ -22,7 +27,7 @@ class TransactionsController < ApplicationController
 
   def update
     @transaction = Transaction.find(params[:id])
-    if @transaction.update(transaction_params)
+    if @transaction.update(update_params)
       respond_to do |format|
         format.js   # Will render update.js.erb
         format.html { redirect_to transactions_path, notice: "Transaction updated." }
@@ -37,18 +42,20 @@ class TransactionsController < ApplicationController
   private
   def get_transactions
     transactions = Transaction.all
-    if @filter[:tags].present?
-      tags = JSON.parse(@filter[:tags])
-      transactions =  Transaction.tagged_with(tags)
-    end
+    transactions =  Transaction.tagged_with(transaction_params[:tag_list]) if transaction_params[:tag_list].present?
+
     transactions.where(transaction_date: @start_date..@end_date).order(transaction_date: :desc, created_at: :desc)
   end
 
   def transaction_params
-    params.require(:transaction).permit(:name, :amount, :transaction_date, :tag_list, :closure_id)
+    params["transaction"] || {}
+  end
+
+  def update_params
+    params.require(:transaction).permit(:name, :amount, :transaction_date, :tag_list)
   end
 
   def permitted_params
-    params.permit(:start_date, :end_date, :filter)
+    params.permit!
   end
 end
