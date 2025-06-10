@@ -10,18 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_05_13_183046) do
+ActiveRecord::Schema[7.1].define(version: 2025_06_10_182103) do
   create_table "budgets", force: :cascade do |t|
     t.integer "tag_id", null: false
     t.integer "amount", null: false
-    t.date "start_date", null: false
-    t.date "end_date", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "closures", force: :cascade do |t|
-    t.string "name", limit: 191, null: false
     t.date "start_date", null: false
     t.date "end_date", null: false
     t.datetime "created_at", null: false
@@ -65,6 +57,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_05_13_183046) do
     t.date "transaction_date", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "is_credit", default: false, null: false
   end
 
   add_foreign_key "taggings", "tags"

@@ -52,7 +52,7 @@ class TransactionsController < ApplicationController
   end
 
   def update_params
-    params.require(:transaction).permit(:name, :amount, :transaction_date, :tag_list)
+    params.require(:transaction).permit(:name, :amount, :transaction_date, :tag_list, :is_credit)
   end
 
   def permitted_params
