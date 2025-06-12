@@ -11,7 +11,7 @@ import {
 import { Layout, Menu, Typography, Avatar } from "antd";
 import {
   DashboardOutlined,
-  TransactionOutlined,
+  UnorderedListOutlined,
   BarChartOutlined,
   WalletOutlined,
   TagsOutlined,
@@ -46,7 +46,7 @@ const AppContent = () => {
   const menuItems = [
     {
       key: "transactions",
-      icon: <TransactionOutlined />,
+      icon: <UnorderedListOutlined />,
       label: "Transactions",
       path: "/transactions",
     },
