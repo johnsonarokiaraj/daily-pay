@@ -1,6 +1,2 @@
-//= require jquery
-//= require jquery_ujs
-//= require bootstrap
-//= require bootstrap-datepicker
-//= require Chart.min
-//= require_tree
+// Legacy application.js - replaced by Webpacker
+// All JavaScript functionality now handled by React components in app/javascript/

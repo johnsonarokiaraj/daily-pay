@@ -14,4 +14,8 @@ class Transaction < ApplicationRecord
     super(capitalized_names)
   end
 
+  def formatted_amount
+    "$#{amount.to_f}"
+  end
+
 end

@@ -63,12 +63,11 @@ group :test do
   gem "selenium-webdriver"
 end
 
-
-gem 'bootstrap-sass', '~> 3.4.1'
-gem 'bootstrap-datepicker-rails'
+# Remove Bootstrap dependencies and add React support
 gem 'sassc-rails', '>= 2.1.0'
-gem 'jquery-rails'
 gem 'pry-rails'
-gem 'font-awesome-rails'
-gem 'chart-js-rails'
 gem 'acts-as-taggable-on'
+
+# React and modern frontend tooling
+gem 'react-rails'
+gem 'webpacker', '~> 5.0'

@@ -2,22 +2,29 @@
  * This is a manifest file that'll be compiled into application.css, which will include all the files
  * listed below.
  *
- * Any CSS (and SCSS, if configured) file within this directory, lib/assets/stylesheets, or any plugin's
- * vendor/assets/stylesheets directory can be referenced here using a relative path.
+ * Since we've migrated to React with Ant Design, we only need minimal styles here.
+ * Most styling is now handled by Ant Design components.
  *
- * You're free to add application-wide styles to this file and they'll appear at the bottom of the
- * compiled file so the styles you add here take precedence over styles defined in any other CSS
- * files in this directory. Styles in this file should be added after the last require_* statement.
- * It is generally better to create a new file per style scope.
- *
- *= require_tree .
  *= require_self
  */
-@import "variables";
-@import "bootstrap-sprockets";
-@import "bootstrap";
-@import "bootstrap-datepicker3";
-@import "font-awesome";
-@import "layout";
-@import "menu";
-@import "tagify";
+
+/* Basic global styles for the React app */
+body {
+  font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+}
+
+/* Override any conflicting styles */
+* {
+  box-sizing: border-box;
+}
+
+/* Ensure React mount points take full height */
+#transaction-app,
+#reports-app, 
+#budgets-app,
+#tags-app {
+  min-height: 100vh;
+}

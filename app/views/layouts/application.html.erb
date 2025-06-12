@@ -1,24 +1,17 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>DailyPay</title>
+    <title>Daily Pay - Personal Finance Tracker</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%= favicon_link_tag 'favicon.png' %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    <%= javascript_include_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_pack_tag 'application', 'data-turbo-track': 'reload' %>
+    <%= stylesheet_pack_tag 'application', 'data-turbo-track': 'reload' if Rails.env.production? %>
   </head>
 
   <body>
-    <%= render partial: 'layouts/header' %>
-    <div class="container-fluid body">
-      <div class="row">
-        <div class="col-md-2"><%= render partial: 'layouts/side_menu' %></div>
-        <div class="col-md-10"><div class="main"><%= yield %></div></div>
-      </div>
-    </div>
-    <%= render partial: 'layouts/footer' %>
+    <%= yield %>
   </body>
 </html>

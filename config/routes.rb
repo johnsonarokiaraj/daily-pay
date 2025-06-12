@@ -5,13 +5,23 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # Defines the root path route ("/")
-  root "transactions#index"
+  # Service worker route
+  get "/sw.js" => redirect("/404.html")
 
+  # API routes for JSON responses - namespaced under /api
+  namespace :api do
+    resources :transactions, defaults: { format: :json }
+    resources :reports, defaults: { format: :json }
+    resources :budgets, defaults: { format: :json }
+    resources :tags, defaults: { format: :json }
+    resources :closures, defaults: { format: :json }
+  end
 
-  resources :transactions
-  resources :reports
-  resources :budgets
-  resources :closures
-  resources :tags
+  # SPA routes - catch all routes and serve the React app
+  root "home#index"
+  
+  # Catch all other routes and serve the React app
+  get "*path", to: "home#index", constraints: ->(request) do
+    !request.xhr? && request.format.html?
+  end
 end
