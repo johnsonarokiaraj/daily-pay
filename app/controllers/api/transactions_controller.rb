@@ -2,17 +2,12 @@ class Api::TransactionsController < ApplicationController
   skip_before_action :verify_authenticity_token
 
   def index
-    @start_date = Date.current.beginning_of_month
-    @end_date = Date.current.end_of_month
-
-    if transaction_params[:allow_date].present? && transaction_params[:allow_date] != "0"
-      @start_date = transaction_params[:start_date] || Date.current.beginning_of_month
-      @end_date = transaction_params[:end_date] || Date.current.end_of_month
-    end
+    @start_date = params[:start_date] || Date.current.beginning_of_month
+    @end_date = params[:end_date] || Date.current.end_of_month
     @transactions = get_transactions
     @credit = @transactions.where(is_credit: true).map{|t| t.amount}.sum
     @debit = @transactions.where(is_credit: false).map{|t| t.amount}.sum
-    @tag_list = transaction_params[:tag_list]
+    @tag_list = params[:tag_list]
 
     respond_to do |format|
       format.html
