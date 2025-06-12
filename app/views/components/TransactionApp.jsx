@@ -46,6 +46,22 @@ const TransactionApp = () => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
 
+  // State for tracking current date range filter
+  const [currentDateRange, setCurrentDateRange] = useState({
+    startDate: dayjs().startOf("month"),
+    endDate: dayjs().endOf("month"),
+  });
+
+  // State for pagination
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 100,
+    total: 0,
+    showSizeChanger: true,
+    showQuickJumper: true,
+    pageSizeOptions: ["10", "20", "50", "100"],
+  });
+
   const [form] = Form.useForm();
   const [filterForm] = Form.useForm();
   const [quickForm] = Form.useForm();
@@ -62,6 +78,7 @@ const TransactionApp = () => {
       const response = await axios.get("/api/transactions", {
         params: filters,
       });
+
       if (response.data.transactions) {
         setTransactions(response.data.transactions);
         setStats({
@@ -69,6 +86,13 @@ const TransactionApp = () => {
           credit: response.data.credit || 0,
           debit: response.data.debit || 0,
         });
+
+        // Update pagination total with full dataset length
+        setPagination((prev) => ({
+          ...prev,
+          total: response.data.transactions.length,
+          current: 1, // Reset to first page when data changes
+        }));
       }
     } catch (error) {
       message.error("Failed to load transactions");
@@ -110,6 +134,8 @@ const TransactionApp = () => {
         transaction_date: dayjs(),
         is_credit: false,
       });
+      // Reset to first page when adding new transaction
+      setPagination((prev) => ({ ...prev, current: 1 }));
       fetchTransactions();
     } catch (error) {
       message.error("Failed to save transaction");
@@ -202,8 +228,26 @@ const TransactionApp = () => {
       filters.tag_list = values.tag_list.join(",");
     if (values.start_date || values.end_date) filters.allow_date = "1";
 
+    // Update current date range state
+    setCurrentDateRange({
+      startDate: values.start_date || dayjs().startOf("month"),
+      endDate: values.end_date || dayjs().endOf("month"),
+    });
+
+    // Reset to first page when applying filters
+    setPagination((prev) => ({ ...prev, current: 1 }));
     fetchTransactions(filters);
     setIsFilterVisible(false);
+  };
+
+  // Handle table pagination, sorting, and filtering changes
+  const handleTableChange = (newPagination, filters, sorter) => {
+    // Only update pagination state - no API call needed for frontend pagination
+    setPagination((prev) => ({
+      ...prev,
+      current: newPagination.current,
+      pageSize: newPagination.pageSize,
+    }));
   };
 
   // Search functionality for table columns
@@ -215,7 +259,7 @@ const TransactionApp = () => {
       clearFilters,
       close,
     }) => (
-      <div style={{ padding: 8 }}>
+      <div style={{ padding: 8, width: 300 }}>
         <Input
           placeholder={`Search ${placeholder}`}
           value={selectedKeys[0]}
@@ -223,7 +267,8 @@ const TransactionApp = () => {
             setSelectedKeys(e.target.value ? [e.target.value] : [])
           }
           onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ marginBottom: 8, display: "block" }}
+          style={{ marginBottom: 8 }}
+          allowClear
         />
         <Space>
           <Button
@@ -581,63 +626,24 @@ const TransactionApp = () => {
     <div style={{ padding: "24px" }}>
       {/* Header */}
       <div style={{ marginBottom: "24px" }}>
-        <Title
-          level={2}
-          style={{
-            margin: 0,
-            background: "linear-gradient(135deg, #1677ff 0%, #69c0ff 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          Transaction Dashboard
-        </Title>
-        <Text type="secondary">Manage your daily expenses and income</Text>
+        <Row justify="space-between" align="middle">
+          <Col>
+            <Title
+              level={2}
+              style={{
+                margin: 0,
+                background: "linear-gradient(135deg, #1677ff 0%, #69c0ff 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              Transaction Dashboard
+            </Title>
+            <Text type="secondary">Manage your daily expenses and income</Text>
+          </Col>
+          <Col></Col>
+        </Row>
       </div>
-
-      {/* Statistics */}
-      <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Total Transactions"
-              value={stats.count}
-              prefix="#"
-              valueStyle={{ color: "#c85ea2" }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Total Debit"
-              value={stats.debit}
-              precision={2}
-              prefix="₹"
-              valueStyle={{ color: "#7385d5" }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Total Credit"
-              value={stats.credit}
-              prefix="₹"
-              valueStyle={{ color: "#16a34a" }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Today"
-              value={dayjs().format("MMM DD")}
-              valueStyle={{ color: "#f59e0b" }}
-            />
-          </Card>
-        </Col>
-      </Row>
 
       {/* Quick Add Transaction Form */}
       <Card style={{ marginBottom: "16px" }}>
@@ -731,6 +737,54 @@ const TransactionApp = () => {
         </Form>
       </Card>
 
+      {/* Statistics */}
+      <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
+        <Col xs={24} sm={12} md={6}>
+          <Card>
+            <Statistic
+              title="Total Transactions"
+              value={stats.count}
+              prefix="#"
+              valueStyle={{ color: "#c85ea2" }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card>
+            <Statistic
+              title="Total Debit"
+              value={stats.debit}
+              precision={2}
+              prefix="₹"
+              valueStyle={{ color: "#7385d5" }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card>
+            <Statistic
+              title="Total Credit"
+              value={stats.credit}
+              prefix="₹"
+              valueStyle={{ color: "#16a34a" }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card>
+            <Statistic
+              title="Current Period"
+              value={
+                currentDateRange.startDate.format("DD MMM YYYY") +
+                " - " +
+                currentDateRange.endDate.format("DD MMM YYYY")
+              }
+              valueStyle={{ color: "#f59e0b" }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
       {/* Transactions Table */}
       <Card>
         <Form form={form} onFinish={handleUpdateTransaction} component={false}>
@@ -745,12 +799,13 @@ const TransactionApp = () => {
             loading={loading}
             rowKey="id"
             pagination={{
-              pageSize: 10,
+              ...pagination,
+              showTotal: (total, range) =>
+                `${range[0]}-${range[1]} of ${total} transactions`,
               showSizeChanger: true,
               showQuickJumper: true,
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} of ${total} items`,
             }}
+            onChange={handleTableChange}
           />
         </Form>
       </Card>
@@ -799,6 +854,13 @@ const TransactionApp = () => {
             <Button
               onClick={() => {
                 filterForm.resetFields();
+                // Reset to current month when clearing filters
+                setCurrentDateRange({
+                  startDate: dayjs().startOf("month"),
+                  endDate: dayjs().endOf("month"),
+                });
+                // Reset to first page when clearing filters
+                setPagination((prev) => ({ ...prev, current: 1 }));
                 fetchTransactions();
                 setIsFilterVisible(false);
               }}
@@ -808,20 +870,6 @@ const TransactionApp = () => {
           </Space>
         </Form>
       </Modal>
-
-      {/* Floating Action Button - Scroll to top */}
-      <FloatButton
-        icon={<PlusOutlined />}
-        type="primary"
-        style={{
-          right: 24,
-          bottom: 24,
-        }}
-        onClick={() => {
-          window.scrollTo({ top: 0, behavior: "smooth" });
-          quickForm.getFieldInstance("name").focus();
-        }}
-      />
     </div>
   );
 };

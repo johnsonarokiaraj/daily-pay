@@ -119,35 +119,6 @@ const AppContent = () => {
 
       <Layout>
         {/* Header */}
-        <Header
-          style={{
-            background: "white",
-            padding: "0 24px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-            zIndex: 1,
-          }}
-        >
-          <Title
-            level={4}
-            style={{
-              margin: 0,
-              background: "linear-gradient(135deg, #1677ff 0%, #69c0ff 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            {(menuItems.find((item) => item.key === selectedKey) || {}).label ||
-              "Dashboard"}
-          </Title>
-
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <Avatar icon={<UserOutlined />} />
-            <span>Welcome back!</span>
-          </div>
-        </Header>
 
         {/* Main Content */}
         <Content style={{ background: "#f5f5f5" }}>
