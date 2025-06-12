@@ -24,7 +24,13 @@ const FilterDrawer = ({ open, onClose, form, onFilter, onClear, tags }) => {
       extra={
         <Space>
           <Button onClick={onClear}>Clear</Button>
-          <Button type="primary" onClick={() => form.submit()}>
+          <Button
+            type="primary"
+            onClick={() => {
+              form.submit();
+              onClose();
+            }}
+          >
             Apply
           </Button>
         </Space>
