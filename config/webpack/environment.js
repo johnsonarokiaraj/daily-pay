@@ -10,6 +10,9 @@ environment.loaders.prepend('babel', {
   }
 })
 
+// Patch: Transpile chart.js in node_modules (for static class fields)
+environment.loaders.get('babel').exclude = /node_modules\/(?!chart\.js)/;
+
 // Add support for Less files (for Ant Design)
 environment.loaders.prepend('less', {
   test: /\.less$/,
