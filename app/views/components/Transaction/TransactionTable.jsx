@@ -276,11 +276,16 @@ const TransactionTable = ({
       render: (amount, record) => {
         if (editingTransaction && editingTransaction.id === record.id) {
           return (
-            <AmountInputSpace direction="vertical" size="small">
+            <AmountInputSpace
+              direction="horizontal"
+              size="small"
+              align="center"
+            >
               <FormItemWrapper>
                 <Form.Item
                   name="amount"
                   rules={[{ required: true, message: "Please enter amount" }]}
+                  style={{ marginBottom: 0 }}
                 >
                   <Input
                     size="small"
@@ -288,15 +293,20 @@ const TransactionTable = ({
                     step="0.01"
                     placeholder="0.00"
                     prefix="₹"
+                    style={{ width: 120 }}
                   />
                 </Form.Item>
               </FormItemWrapper>
               <FormItemWrapper>
-                <Form.Item name="is_credit" valuePropName="checked">
+                <Form.Item
+                  name="is_credit"
+                  valuePropName="checked"
+                  style={{ marginBottom: 0 }}
+                >
                   <Switch
                     size="small"
                     checkedChildren="Credit"
-                    unCheckedChildren="Credit"
+                    unCheckedChildren="Debit"
                   />
                 </Form.Item>
               </FormItemWrapper>
@@ -309,7 +319,7 @@ const TransactionTable = ({
           </AmountText>
         );
       },
-      width: 140,
+      width: 220,
       sorter: (a, b) => a.amount - b.amount,
       sortDirections: ["ascend", "descend"],
     },
@@ -376,6 +386,7 @@ const TransactionTable = ({
       title: "Actions",
       key: "actions",
       width: 120,
+      fixed: "right",
       render: (_, record) => (
         <Space>
           {editingTransaction && editingTransaction.id === record.id ? (
