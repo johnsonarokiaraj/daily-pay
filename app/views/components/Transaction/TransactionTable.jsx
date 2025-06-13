@@ -150,7 +150,10 @@ const TransactionTable = ({
         <TagSelect
           placeholder="Select tags to filter"
           value={selectedKeys}
-          onChange={(values) => setSelectedKeys(values || [])}
+          onChange={(values) => {
+            console.log("values", values);
+            setSelectedKeys(values || []);
+          }}
           mode="multiple"
           showSearch
           filterOption={(input, option) =>
@@ -293,7 +296,7 @@ const TransactionTable = ({
                   <Switch
                     size="small"
                     checkedChildren="Credit"
-                    unCheckedChildren="Debit"
+                    unCheckedChildren="Credit"
                   />
                 </Form.Item>
               </FormItemWrapper>
@@ -341,7 +344,11 @@ const TransactionTable = ({
         return (
           <TagsContainer size={[0, 8]} wrap>
             {recordTags && recordTags.map
-              ? recordTags.map((tag, index) => <Tag key={index}>{tag}</Tag>)
+              ? recordTags.map((tag, index) => (
+                  <Tag key={index} color={"purple"}>
+                    {tag}
+                  </Tag>
+                ))
               : null}
           </TagsContainer>
         );

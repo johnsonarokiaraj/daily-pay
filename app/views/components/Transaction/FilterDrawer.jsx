@@ -23,7 +23,14 @@ const FilterDrawer = ({ open, onClose, form, onFilter, onClear, tags }) => {
       onClose={onClose}
       extra={
         <Space>
-          <Button onClick={onClear}>Clear</Button>
+          <Button
+            onClick={() => {
+              form.resetFields();
+              onClear();
+            }}
+          >
+            Clear
+          </Button>
           <Button
             type="primary"
             onClick={() => {

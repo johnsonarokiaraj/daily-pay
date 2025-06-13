@@ -194,13 +194,10 @@ const TagsApp = () => {
       render: (_, record) => (
         <Space>
           <Button
-            type="primary"
-            size="small"
+            shape="circle"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
-          >
-            Edit
-          </Button>
+          />
           <Popconfirm
             title="Delete tag"
             description="Are you sure you want to delete this tag? This will remove it from all transactions."
@@ -209,9 +206,12 @@ const TagsApp = () => {
             okType="danger"
             onConfirm={() => handleDelete(record.id)}
           >
-            <Button danger size="small" icon={<DeleteOutlined />}>
-              Delete
-            </Button>
+            <Button
+              danger
+              shape="circle"
+              size="small"
+              icon={<DeleteOutlined />}
+            />
           </Popconfirm>
         </Space>
       ),
@@ -263,7 +263,7 @@ const TagsApp = () => {
               title="Total Amount"
               value={stats.totalAmount}
               precision={2}
-              prefix={<DollarOutlined />}
+              prefix="₹"
               valueStyle={{ color: "#c85ea2" }}
             />
           </Card>
@@ -278,7 +278,7 @@ const TagsApp = () => {
           loading={loading}
           rowKey="id"
           pagination={{
-            pageSize: 15,
+            pageSize: 100,
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) =>
