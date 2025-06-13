@@ -10,7 +10,7 @@ import {
   Col,
   Switch,
 } from "antd";
-import { PlusOutlined, FilterOutlined } from "@ant-design/icons";
+import { PlusOutlined, FilterOutlined, SaveOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import styled from "styled-components";
 
@@ -39,7 +39,14 @@ const FullWidthSelect = styled(Select)`
   width: 100%;
 `;
 
-const TransactionForm = ({ form, onSubmit, onFilterClick, tags }) => {
+const TransactionForm = ({
+  form,
+  onSubmit,
+  onFilterClick,
+  onSaveViewClick,
+  hasFiltersApplied,
+  tags,
+}) => {
   return (
     <FormCard>
       <Form
@@ -55,8 +62,8 @@ const TransactionForm = ({ form, onSubmit, onFilterClick, tags }) => {
           <Col xs={12} sm={3}>
             <NoMarginFormItem>
               <Form.Item
-                  name="transaction_date"
-                  rules={[{ required: true, message: "Please select date" }]}
+                name="transaction_date"
+                rules={[{ required: true, message: "Please select date" }]}
               >
                 <FullWidthDatePicker format="DD-MM-YYYY" />
               </Form.Item>
@@ -118,9 +125,18 @@ const TransactionForm = ({ form, onSubmit, onFilterClick, tags }) => {
               <Button type="primary" htmlType="submit" icon={<PlusOutlined />}>
                 Add
               </Button>
-              <Button icon={<FilterOutlined />} onClick={onFilterClick}>
-                Filter
-              </Button>
+              <Button icon={<FilterOutlined />} onClick={onFilterClick} />
+              <Button
+                id="save-filter"
+                icon={<SaveOutlined />}
+                onClick={onSaveViewClick}
+                disabled={!hasFiltersApplied}
+                title={
+                  hasFiltersApplied
+                    ? "Save current filters as view"
+                    : "Apply filters first to save a view"
+                }
+              />
             </Space>
           </Col>
         </Row>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_06_13_053106) do
+ActiveRecord::Schema[7.1].define(version: 2025_06_13_072617) do
   create_table "closures", force: :cascade do |t|
     t.string "name", limit: 191, null: false
     t.date "start_date", null: false
@@ -57,6 +57,15 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_13_053106) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "is_credit", default: false, null: false
+  end
+
+  create_table "views", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "filters"
+    t.integer "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_views_on_user_id"
   end
 
   add_foreign_key "taggings", "tags"

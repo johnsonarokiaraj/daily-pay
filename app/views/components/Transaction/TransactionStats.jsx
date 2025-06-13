@@ -15,7 +15,7 @@ const CustomLabel = styled.div`
 const PeriodText = styled.div`
   margin-bottom: 4px;
   color: #f59e0b;
-  font-size: 20px;
+  font-size: 19px;
 `;
 
 const StatisticValue = {
@@ -64,9 +64,9 @@ const TransactionStats = ({ stats, currentDateRange }) => {
           <CustomLabel>Current Period</CustomLabel>
           <PeriodText>
             <CalendarOutlined style={{ marginRight: 8 }} />
-            {currentDateRange.startDate.format("DD/MM/YYYY") +
+            {currentDateRange.startDate.format("DD-MM-YYYY") +
               " - " +
-              currentDateRange.endDate.format("DD/MM/YYYY")}
+              currentDateRange.endDate.format("DD-MM-YYYY")}
           </PeriodText>
         </Card>
       </Col>

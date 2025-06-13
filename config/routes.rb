@@ -14,6 +14,7 @@ Rails.application.routes.draw do
     resources :reports, defaults: { format: :json }
     resources :tags, defaults: { format: :json }
     resources :closures, defaults: { format: :json }
+    resources :views, defaults: { format: :json }
   end
 
   # SPA routes - catch all routes and serve the React app

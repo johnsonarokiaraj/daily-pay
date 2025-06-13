@@ -8,12 +8,14 @@ import TransactionStats from "./TransactionStats";
 import TransactionForm from "./TransactionForm";
 import TransactionTable from "./TransactionTable";
 import FilterDrawer from "./FilterDrawer";
+import SaveViewModal from "./SaveViewModal";
 
 // Hooks
 import { useTransactions } from "./hooks/useTransactions";
 
 const TransactionDashboard = () => {
   const [isFilterVisible, setIsFilterVisible] = useState(false);
+  const [isSaveViewModalVisible, setIsSaveViewModalVisible] = useState(false);
 
   // Forms
   const [form] = Form.useForm();
@@ -32,6 +34,7 @@ const TransactionDashboard = () => {
     searchedColumn,
     currentDateRange,
     pagination,
+    appliedFilters,
 
     // Actions
     handleSubmit,
@@ -43,6 +46,7 @@ const TransactionDashboard = () => {
     handleSearch,
     handleReset,
     clearFilters,
+    hasFiltersApplied,
   } = useTransactions();
 
   // Handle form submission with form reset
@@ -67,6 +71,8 @@ const TransactionDashboard = () => {
         form={quickForm}
         onSubmit={onSubmit}
         onFilterClick={() => setIsFilterVisible(true)}
+        onSaveViewClick={() => setIsSaveViewModalVisible(true)}
+        hasFiltersApplied={hasFiltersApplied()}
         tags={tags}
       />
 
@@ -94,6 +100,12 @@ const TransactionDashboard = () => {
         onFilter={handleFilter}
         onClear={clearFilters}
         tags={tags}
+      />
+
+      <SaveViewModal
+        open={isSaveViewModalVisible}
+        onClose={() => setIsSaveViewModalVisible(false)}
+        appliedFilters={appliedFilters}
       />
     </div>
   );

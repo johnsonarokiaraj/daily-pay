@@ -12,6 +12,12 @@ export const useTransactions = () => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
 
+  // State for tracking applied filters
+  const [appliedFilters, setAppliedFilters] = useState({});
+
+  // State to track if filters were loaded from a saved view (vs manually applied)
+  const [isLoadedFromSavedView, setIsLoadedFromSavedView] = useState(false);
+
   // State for tracking current date range filter
   const [currentDateRange, setCurrentDateRange] = useState({
     startDate: dayjs().startOf("month"),
@@ -121,7 +127,7 @@ export const useTransactions = () => {
     }
   };
 
-  const handleFilter = (values) => {
+  const handleFilter = (values, fromSavedView = false) => {
     const filters = {};
     if (values.start_date)
       filters.start_date = values.start_date.format("DD-MM-YYYY");
@@ -130,6 +136,12 @@ export const useTransactions = () => {
     if (values.tag_list && values.tag_list.length)
       filters.tag_list = values.tag_list.join(",");
     if (values.start_date || values.end_date) filters.allow_date = "1";
+
+    // Store applied filters for enabling/disabling save button
+    setAppliedFilters(values);
+
+    // Track if this was loaded from a saved view
+    setIsLoadedFromSavedView(fromSavedView);
 
     // Update current date range state
     setCurrentDateRange({
@@ -184,9 +196,13 @@ export const useTransactions = () => {
     }
     setSearchedColumn("");
     confirm();
-  };
+  }; const clearFilters = () => {
+    // Clear applied filters state
+    setAppliedFilters({});
 
-  const clearFilters = () => {
+    // Reset saved view flag
+    setIsLoadedFromSavedView(false);
+
     // Reset to current month when clearing filters
     setCurrentDateRange({
       startDate: dayjs().startOf("month"),
@@ -197,11 +213,61 @@ export const useTransactions = () => {
     fetchTransactions();
   };
 
+  // Check if any filters are currently applied and not from a saved view
+  const hasFiltersApplied = () => {
+    if (!appliedFilters || isLoadedFromSavedView) return false;
+
+    return !!(
+      appliedFilters.start_date ||
+      appliedFilters.end_date ||
+      (appliedFilters.tag_list && appliedFilters.tag_list.length > 0)
+    );
+  };
+
   // Load data on component mount
   useEffect(() => {
     fetchTransactions();
     fetchTags();
+
+    // Check URL parameters for applying a saved view
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.size > 0) {
+      const filters = {};
+      urlParams.forEach((value, key) => {
+        filters[key] = value;
+      });
+
+      // Apply the filters from URL (mark as loaded from saved view)
+      setTimeout(() => {
+        handleFilter({
+          start_date: filters.start_date ? dayjs(filters.start_date, "DD-MM-YYYY") : null,
+          end_date: filters.end_date ? dayjs(filters.end_date, "DD-MM-YYYY") : null,
+          tag_list: filters.tag_list ? filters.tag_list.split(",") : null,
+        }, true);
+      }, 500); // Small delay to ensure tags are loaded
+    }
   }, []);
+
+  // Apply saved view by ID
+  const applySavedView = async (viewId) => {
+    try {
+      const response = await axios.get(`/api/views/${viewId}`);
+      const filters = response.data.filters;
+
+      // Convert filters to form format
+      const formFilters = {
+        start_date: filters.start_date ? dayjs(filters.start_date, "DD-MM-YYYY") : null,
+        end_date: filters.end_date ? dayjs(filters.end_date, "DD-MM-YYYY") : null,
+        tag_list: filters.tag_list ? filters.tag_list.split(",") : null,
+      };
+
+      // Apply the filters (mark as loaded from saved view)
+      handleFilter(formFilters, true);
+      message.success("View applied successfully");
+    } catch (error) {
+      message.error("Failed to apply saved view");
+    }
+  };
 
   return {
     // State
@@ -214,6 +280,7 @@ export const useTransactions = () => {
     searchedColumn,
     currentDateRange,
     pagination,
+    appliedFilters,
 
     // Actions
     fetchTransactions,
@@ -229,5 +296,7 @@ export const useTransactions = () => {
     clearFilters,
     setCurrentDateRange,
     setPagination,
+    applySavedView,
+    hasFiltersApplied,
   };
 };
