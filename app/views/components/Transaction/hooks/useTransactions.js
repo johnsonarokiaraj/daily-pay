@@ -18,6 +18,9 @@ export const useTransactions = () => {
   // State to track if filters were loaded from a saved view (vs manually applied)
   const [isLoadedFromSavedView, setIsLoadedFromSavedView] = useState(false);
 
+  // State for tracking current filters that are active
+  const [currentFilters, setCurrentFilters] = useState({});
+
   // State for tracking current date range filter
   const [currentDateRange, setCurrentDateRange] = useState({
     startDate: dayjs().startOf("month"),
@@ -93,7 +96,9 @@ export const useTransactions = () => {
 
       // Reset to first page when adding new transaction
       setPagination((prev) => ({ ...prev, current: 1 }));
-      fetchTransactions();
+
+      // Preserve current filters when refreshing data
+      fetchTransactions(currentFilters);
       return true; // Success indicator
     } catch (error) {
       message.error("Failed to save transaction");
@@ -119,7 +124,9 @@ export const useTransactions = () => {
       message.success("Transaction updated successfully");
 
       setEditingTransaction(null);
-      fetchTransactions();
+
+      // Preserve current filters when refreshing data
+      fetchTransactions(currentFilters);
       return true;
     } catch (error) {
       message.error("Failed to update transaction");
@@ -135,7 +142,16 @@ export const useTransactions = () => {
       filters.end_date = values.end_date.format("DD-MM-YYYY");
     if (values.tag_list && values.tag_list.length)
       filters.tag_list = values.tag_list.join(",");
-    if (values.start_date || values.end_date) filters.allow_date = "1";
+
+    // Set allow_date flag based on whether dates are provided
+    if (values.start_date || values.end_date) {
+      filters.allow_date = "1";
+    } else {
+      filters.allow_date = "0";
+    }
+
+    // Store current filters for preserving them after CRUD operations
+    setCurrentFilters(filters);
 
     // Store applied filters for enabling/disabling save button
     setAppliedFilters(values);
@@ -199,6 +215,9 @@ export const useTransactions = () => {
   }; const clearFilters = () => {
     // Clear applied filters state
     setAppliedFilters({});
+
+    // Clear current filters
+    setCurrentFilters({});
 
     // Reset saved view flag
     setIsLoadedFromSavedView(false);
@@ -281,6 +300,7 @@ export const useTransactions = () => {
     currentDateRange,
     pagination,
     appliedFilters,
+    currentFilters,
 
     // Actions
     fetchTransactions,
