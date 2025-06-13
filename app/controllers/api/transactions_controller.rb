@@ -3,12 +3,12 @@ class Api::TransactionsController < ApplicationController
 
   def index
     # Only set date defaults if no allow_date flag is passed or if dates are explicitly provided
+    @apply_date_filter = true
+    @start_date = Date.current.beginning_of_month
+    @end_date = Date.current.end_of_month
     if params[:allow_date] == "1" || params[:start_date].present? || params[:end_date].present?
-      @start_date = params[:start_date] || Date.current.beginning_of_month
-      @end_date = params[:end_date] || Date.current.end_of_month
-      @apply_date_filter = true
-    else
-      @apply_date_filter = false
+      @start_date = params[:start_date]
+      @end_date = params[:end_date]
     end
     
     @transactions = get_transactions
