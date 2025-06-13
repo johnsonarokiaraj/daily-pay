@@ -206,15 +206,6 @@ const TransactionTable = ({
 
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      width: 70,
-      sorter: (a, b) => a.id - b.id,
-      sortDirections: ["ascend", "descend"],
-      defaultSortOrder: "descend", // Default to newest transactions first
-    },
-    {
       title: (
         <>
           <CalendarOutlined /> Date

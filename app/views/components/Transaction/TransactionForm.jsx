@@ -52,6 +52,16 @@ const TransactionForm = ({ form, onSubmit, onFilterClick, tags }) => {
         }}
       >
         <Row gutter={16} align="middle">
+          <Col xs={12} sm={3}>
+            <NoMarginFormItem>
+              <Form.Item
+                  name="transaction_date"
+                  rules={[{ required: true, message: "Please select date" }]}
+              >
+                <FullWidthDatePicker format="DD-MM-YYYY" />
+              </Form.Item>
+            </NoMarginFormItem>
+          </Col>
           <Col xs={24} sm={5}>
             <NoMarginFormItem>
               <Form.Item
@@ -87,16 +97,6 @@ const TransactionForm = ({ form, onSubmit, onFilterClick, tags }) => {
                 initialValue={false}
               >
                 <Switch checkedChildren="Credit" unCheckedChildren="Credit" />
-              </Form.Item>
-            </NoMarginFormItem>
-          </Col>
-          <Col xs={12} sm={3}>
-            <NoMarginFormItem>
-              <Form.Item
-                name="transaction_date"
-                rules={[{ required: true, message: "Please select date" }]}
-              >
-                <FullWidthDatePicker format="DD-MM-YYYY" />
               </Form.Item>
             </NoMarginFormItem>
           </Col>
