@@ -193,11 +193,7 @@ const TagsApp = () => {
       key: "actions",
       render: (_, record) => (
         <Space>
-          <Button
-            shape="circle"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          />
+          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
           <Popconfirm
             title="Delete tag"
             description="Are you sure you want to delete this tag? This will remove it from all transactions."
@@ -206,12 +202,7 @@ const TagsApp = () => {
             okType="danger"
             onConfirm={() => handleDelete(record.id)}
           >
-            <Button
-              danger
-              shape="circle"
-              size="small"
-              icon={<DeleteOutlined />}
-            />
+            <Button danger size="small" icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>
       ),

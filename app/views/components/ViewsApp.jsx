@@ -25,9 +25,6 @@ import styled from "styled-components";
 const ViewLink = styled.span`
   color: #1890ff;
   cursor: pointer;
-  &:active {
-    color: lightgreen;
-  }
 `;
 
 const { Title, Text, Link } = Typography;
@@ -156,7 +153,7 @@ const ViewsApp = () => {
       title: "Name",
       dataIndex: "name",
       key: "name",
-      render: (text) => (
+      render: (text, record) => (
         <ViewLink onClick={() => handleApplyView(record)}>{text}</ViewLink>
       ),
     },

@@ -395,7 +395,6 @@ const TransactionTable = ({
             </>
           ) : (
             <Button
-              shape="circle"
               icon={<EditOutlined />}
               onClick={() => handleEdit(record)}
             />
