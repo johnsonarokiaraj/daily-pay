@@ -60,7 +60,7 @@ const TransactionForm = ({
           is_credit: false,
         }}
       >
-        <Row gutter={16} align="middle">
+        <Row gutter={16} align="flex-start">
           <Col xs={12} sm={3}>
             <NoMarginFormItem>
               <Form.Item
