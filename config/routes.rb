@@ -12,7 +12,6 @@ Rails.application.routes.draw do
   namespace :api do
     resources :transactions, defaults: { format: :json }
     resources :reports, defaults: { format: :json }
-    resources :budgets, defaults: { format: :json }
     resources :tags, defaults: { format: :json }
     resources :closures, defaults: { format: :json }
   end

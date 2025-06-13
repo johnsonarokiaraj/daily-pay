@@ -13,7 +13,6 @@ import {
   DashboardOutlined,
   UnorderedListOutlined,
   BarChartOutlined,
-  WalletOutlined,
   TagsOutlined,
   UserOutlined,
 } from "@ant-design/icons";
@@ -21,7 +20,6 @@ import {
 // Import components
 import TransactionApp from "./TransactionApp";
 import ReportsApp from "./ReportsApp";
-import BudgetsApp from "./BudgetsApp";
 import TagsApp from "./TagsApp";
 
 const { Header, Content, Sider } = Layout;
@@ -36,7 +34,6 @@ const AppContent = () => {
     const path = location.pathname;
     if (path === "/transactions") return "transactions";
     if (path === "/reports") return "reports";
-    if (path === "/budgets") return "budgets";
     if (path === "/tags") return "tags";
     return "transactions";
   };
@@ -55,12 +52,6 @@ const AppContent = () => {
       icon: <BarChartOutlined />,
       label: "Reports",
       path: "/reports",
-    },
-    {
-      key: "budgets",
-      icon: <WalletOutlined />,
-      label: "Budgets",
-      path: "/budgets",
     },
     {
       key: "tags",
@@ -126,7 +117,6 @@ const AppContent = () => {
             <Route path="/" element={<Navigate to="/transactions" replace />} />
             <Route path="/transactions" element={<TransactionApp />} />
             <Route path="/reports" element={<ReportsApp />} />
-            <Route path="/budgets" element={<BudgetsApp />} />
             <Route path="/tags" element={<TagsApp />} />
             <Route path="*" element={<Navigate to="/transactions" replace />} />
           </Routes>
