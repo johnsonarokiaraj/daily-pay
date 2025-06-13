@@ -2,8 +2,15 @@ class Api::TransactionsController < ApplicationController
   skip_before_action :verify_authenticity_token
 
   def index
-    @start_date = params[:start_date] || Date.current.beginning_of_month
-    @end_date = params[:end_date] || Date.current.end_of_month
+    # Only set date defaults if no allow_date flag is passed or if dates are explicitly provided
+    if params[:allow_date] == "1" || params[:start_date].present? || params[:end_date].present?
+      @start_date = params[:start_date] || Date.current.beginning_of_month
+      @end_date = params[:end_date] || Date.current.end_of_month
+      @apply_date_filter = true
+    else
+      @apply_date_filter = false
+    end
+    
     @transactions = get_transactions
     @credit = @transactions.where(is_credit: true).map{|t| t.amount}.sum
     @debit = @transactions.where(is_credit: false).map{|t| t.amount}.sum
@@ -97,9 +104,18 @@ class Api::TransactionsController < ApplicationController
 
   def get_transactions
     transactions = Transaction.all
-    transactions =  Transaction.tagged_with(transaction_params[:tag_list]) if transaction_params[:tag_list].present?
-
-    transactions.where(transaction_date: @start_date..@end_date).order(transaction_date: :desc, created_at: :desc)
+    
+    # Apply tag filter if present
+    if params[:tag_list].present?
+      transactions = Transaction.tagged_with(params[:tag_list])
+    end
+    
+    # Only apply date filter if explicitly requested or dates are provided
+    if @apply_date_filter
+      transactions = transactions.where(transaction_date: @start_date..@end_date)
+    end
+    
+    transactions.order(transaction_date: :desc, created_at: :desc)
   end
 
   def transaction_params
