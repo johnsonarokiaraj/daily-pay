@@ -47,6 +47,7 @@ const TransactionDashboard = () => {
     handleReset,
     clearFilters,
     hasFiltersApplied,
+    hasActiveFilters,
   } = useTransactions();
 
   // Handle form submission with form reset
@@ -73,6 +74,7 @@ const TransactionDashboard = () => {
         onFilterClick={() => setIsFilterVisible(true)}
         onSaveViewClick={() => setIsSaveViewModalVisible(true)}
         hasFiltersApplied={hasFiltersApplied()}
+        hasActiveFilters={hasActiveFilters()}
         tags={tags}
       />
 

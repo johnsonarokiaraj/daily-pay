@@ -243,6 +243,17 @@ export const useTransactions = () => {
     );
   };
 
+  // Check if any filters are currently active (regardless of source)
+  const hasActiveFilters = () => {
+    if (!appliedFilters) return false;
+
+    return !!(
+      appliedFilters.start_date ||
+      appliedFilters.end_date ||
+      (appliedFilters.tag_list && appliedFilters.tag_list.length > 0)
+    );
+  };
+
   // Load data on component mount
   useEffect(() => {
     fetchTransactions();
@@ -318,5 +329,6 @@ export const useTransactions = () => {
     setPagination,
     applySavedView,
     hasFiltersApplied,
+    hasActiveFilters,
   };
 };

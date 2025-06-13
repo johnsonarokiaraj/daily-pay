@@ -9,6 +9,7 @@ import {
   Row,
   Col,
   Switch,
+  Badge,
 } from "antd";
 import { PlusOutlined, FilterOutlined, SaveOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -45,6 +46,7 @@ const TransactionForm = ({
   onFilterClick,
   onSaveViewClick,
   hasFiltersApplied,
+  hasActiveFilters,
   tags,
 }) => {
   return (
@@ -125,7 +127,9 @@ const TransactionForm = ({
               <Button type="primary" htmlType="submit" icon={<PlusOutlined />}>
                 Add
               </Button>
-              <Button icon={<FilterOutlined />} onClick={onFilterClick} />
+              <Badge dot={hasActiveFilters} color="#1890ff">
+                <Button icon={<FilterOutlined />} onClick={onFilterClick} />
+              </Badge>
               <Button
                 id="save-filter"
                 icon={<SaveOutlined />}
