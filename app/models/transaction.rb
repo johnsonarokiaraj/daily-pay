@@ -1,4 +1,5 @@
 class Transaction < ApplicationRecord
+  include DailyBackup
 
   acts_as_taggable_on :tags
 

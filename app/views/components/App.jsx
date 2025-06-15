@@ -11,18 +11,20 @@ import {
 import { Layout, Menu, Typography, Avatar } from "antd";
 import {
   DashboardOutlined,
-  UnorderedListOutlined,
+  TransactionOutlined,
   BarChartOutlined,
+  WalletOutlined,
   TagsOutlined,
-  EyeOutlined,
   UserOutlined,
+  CloudDownloadOutlined,
 } from "@ant-design/icons";
 
 // Import components
 import TransactionApp from "./TransactionApp";
 import ReportsApp from "./ReportsApp";
+// import BudgetsApp from "./BudgetsApp";
 import TagsApp from "./TagsApp";
-import ViewsApp from "./ViewsApp";
+import DataBackupApp from "./DataBackupApp";
 
 const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
@@ -36,8 +38,9 @@ const AppContent = () => {
     const path = location.pathname;
     if (path === "/transactions") return "transactions";
     if (path === "/reports") return "reports";
+    // if (path === "/budgets") return "budgets";
     if (path === "/tags") return "tags";
-    if (path === "/views") return "views";
+    if (path === "/backup") return "backup";
     return "transactions";
   };
 
@@ -46,7 +49,7 @@ const AppContent = () => {
   const menuItems = [
     {
       key: "transactions",
-      icon: <UnorderedListOutlined />,
+      icon: <TransactionOutlined />,
       label: "Transactions",
       path: "/transactions",
     },
@@ -57,16 +60,22 @@ const AppContent = () => {
       path: "/reports",
     },
     {
+      key: "budgets",
+      icon: <WalletOutlined />,
+      label: "Budgets",
+      path: "/budgets",
+    },
+    {
       key: "tags",
       icon: <TagsOutlined />,
       label: "Tags",
       path: "/tags",
     },
     {
-      key: "views",
-      icon: <EyeOutlined />,
-      label: "Views",
-      path: "/views",
+      key: "backup",
+      icon: <CloudDownloadOutlined />,
+      label: "Data Backup",
+      path: "/backup",
     },
   ];
 
@@ -156,8 +165,9 @@ const AppContent = () => {
             <Route path="/" element={<Navigate to="/transactions" replace />} />
             <Route path="/transactions" element={<TransactionApp />} />
             <Route path="/reports" element={<ReportsApp />} />
+            {/* <Route path="/budgets" element={<BudgetsApp />} /> */}
             <Route path="/tags" element={<TagsApp />} />
-            <Route path="/views" element={<ViewsApp />} />
+            <Route path="/backup" element={<DataBackupApp />} />
             <Route path="*" element={<Navigate to="/transactions" replace />} />
           </Routes>
         </Content>
