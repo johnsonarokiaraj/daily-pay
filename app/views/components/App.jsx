@@ -11,11 +11,13 @@ import {
 import { Layout, Menu, Typography, Avatar } from "antd";
 import {
   DashboardOutlined,
-  UnorderedListOutlined,
+  TransactionOutlined,
   BarChartOutlined,
+  WalletOutlined,
   TagsOutlined,
-  EyeOutlined,
   UserOutlined,
+  CloudDownloadOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 
 // Import components
@@ -23,6 +25,7 @@ import TransactionApp from "./TransactionApp";
 import ReportsApp from "./ReportsApp";
 import TagsApp from "./TagsApp";
 import ViewsApp from "./ViewsApp";
+import DataBackupApp from "./DataBackupApp";
 
 const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
@@ -38,6 +41,7 @@ const AppContent = () => {
     if (path === "/reports") return "reports";
     if (path === "/tags") return "tags";
     if (path === "/views") return "views";
+    if (path === "/backup") return "backup";
     return "transactions";
   };
 
@@ -46,7 +50,7 @@ const AppContent = () => {
   const menuItems = [
     {
       key: "transactions",
-      icon: <UnorderedListOutlined />,
+      icon: <TransactionOutlined />,
       label: "Transactions",
       path: "/transactions",
     },
@@ -67,6 +71,12 @@ const AppContent = () => {
       icon: <EyeOutlined />,
       label: "Views",
       path: "/views",
+    },
+    {
+      key: "backup",
+      icon: <CloudDownloadOutlined />,
+      label: "Data Backup",
+      path: "/backup",
     },
   ];
 
@@ -158,6 +168,7 @@ const AppContent = () => {
             <Route path="/reports" element={<ReportsApp />} />
             <Route path="/tags" element={<TagsApp />} />
             <Route path="/views" element={<ViewsApp />} />
+            <Route path="/backup" element={<DataBackupApp />} />
             <Route path="*" element={<Navigate to="/transactions" replace />} />
           </Routes>
         </Content>

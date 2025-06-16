@@ -15,7 +15,23 @@ Rails.application.routes.draw do
     resources :tags, defaults: { format: :json }
     resources :closures, defaults: { format: :json }
     resources :views, defaults: { format: :json }
+    resources :backups, only: [:index], defaults: { format: :json }
   end
+
+  # Serve backup files for download
+  get '/backups/:filename', to: proc { |env|
+    req = Rack::Request.new(env)
+    filename = req.path_info.split('/').last
+    backup_path = Rails.root.join('db', 'backups', filename)
+    if File.exist?(backup_path)
+      [200, {
+        'Content-Type' => 'application/sql',
+        'Content-Disposition' => "attachment; filename=\"#{filename}\""
+      }, [File.read(backup_path)]]
+    else
+      [404, { 'Content-Type' => 'text/plain' }, ['Not found']]
+    end
+  }
 
   # SPA routes - catch all routes and serve the React app
   root "home#index"
