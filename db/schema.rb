@@ -10,15 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_06_13_072617) do
-  create_table "closures", force: :cascade do |t|
-    t.string "name", limit: 191, null: false
-    t.date "start_date", null: false
-    t.date "end_date", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
+ActiveRecord::Schema[7.1].define(version: 2025_06_19_120000) do
   create_table "taggings", force: :cascade do |t|
     t.integer "tag_id"
     t.string "taggable_type"
@@ -50,6 +42,17 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_13_072617) do
     t.index ["name"], name: "index_tags_on_name", unique: true
   end
 
+  create_table "targets", force: :cascade do |t|
+    t.integer "view_id", null: false
+    t.string "target_type", null: false
+    t.decimal "value", precision: 15, scale: 2, null: false
+    t.date "target_date", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["view_id", "target_type", "target_date"], name: "index_targets_on_view_id_and_target_type_and_target_date", unique: true
+    t.index ["view_id"], name: "index_targets_on_view_id"
+  end
+
   create_table "transactions", force: :cascade do |t|
     t.string "name", limit: 191, null: false
     t.integer "amount", null: false
@@ -69,4 +72,5 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_13_072617) do
   end
 
   add_foreign_key "taggings", "tags"
+  add_foreign_key "targets", "views"
 end

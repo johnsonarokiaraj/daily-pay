@@ -10,7 +10,11 @@ Rails.application.routes.draw do
 
   # API routes for JSON responses - namespaced under /api
   namespace :api do
-    resources :transactions, defaults: { format: :json }
+    resources :transactions, defaults: { format: :json } do
+      collection do
+        get :stats
+      end
+    end
     resources :reports, defaults: { format: :json }
     resources :tags, defaults: { format: :json }
     resources :closures, defaults: { format: :json }
@@ -20,6 +24,11 @@ Rails.application.routes.draw do
         post :upload_to_drive
         get :folder_id
         post :folder_id, action: :set_folder_id
+      end
+    end
+    resources :targets, defaults: { format: :json } do
+      member do
+        get :progress
       end
     end
   end

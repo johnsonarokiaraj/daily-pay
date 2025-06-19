@@ -26,6 +26,7 @@ import ReportsApp from "./ReportsApp";
 import TagsApp from "./TagsApp";
 import ViewsApp from "./ViewsApp";
 import DataBackupApp from "./DataBackupApp";
+import TargetsApp from "./TargetsApp";
 
 const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
@@ -42,6 +43,7 @@ const AppContent = () => {
     if (path === "/tags") return "tags";
     if (path === "/views") return "views";
     if (path === "/backup") return "backup";
+    if (path === "/targets") return "targets";
     return "transactions";
   };
 
@@ -77,6 +79,12 @@ const AppContent = () => {
       icon: <CloudDownloadOutlined />,
       label: "Data Backup",
       path: "/backup",
+    },
+    {
+      key: "targets",
+      icon: <WalletOutlined />,
+      label: "Targets",
+      path: "/targets",
     },
   ];
 
@@ -169,6 +177,7 @@ const AppContent = () => {
             <Route path="/tags" element={<TagsApp />} />
             <Route path="/views" element={<ViewsApp />} />
             <Route path="/backup" element={<DataBackupApp />} />
+            <Route path="/targets" element={<TargetsApp />} />
             <Route path="*" element={<Navigate to="/transactions" replace />} />
           </Routes>
         </Content>

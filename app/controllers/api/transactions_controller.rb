@@ -94,6 +94,25 @@ class Api::TransactionsController < ApplicationController
     Transaction.transactions_on_subtags(@monthly_tag, @sub_tags)
   end
 
+  # GET /api/transactions/stats
+  def stats
+    filters = params.permit(:start_date, :end_date, :tag_list)
+    transactions = Transaction.all
+    if filters[:start_date].present?
+      transactions = transactions.where('transaction_date >= ?', Date.strptime(filters[:start_date], '%d-%m-%Y'))
+    end
+    if filters[:end_date].present?
+      transactions = transactions.where('transaction_date <= ?', Date.strptime(filters[:end_date], '%d-%m-%Y'))
+    end
+    if filters[:tag_list].present?
+      tags = filters[:tag_list].split(',')
+      transactions = transactions.tagged_with(tags)
+    end
+    credit = transactions.where(is_credit: true).sum(:amount)
+    debit = transactions.where(is_credit: false).sum(:amount)
+    render json: { credit: credit, debit: debit }
+  end
+
 
   private
   
