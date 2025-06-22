@@ -71,3 +71,4 @@ gem 'acts-as-taggable-on'
 # React and modern frontend tooling
 gem 'react-rails'
 gem 'webpacker', '~> 5.0'
+gem "google-apis-drive_v3"

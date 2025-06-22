@@ -13,6 +13,7 @@ app/.DS_Store
 app/assets/.DS_Store
 db/schema.rb
 db/backups/
+config/google_drive_service_account.json
 
 # Ignore all environment files (except templates).
 /.env*

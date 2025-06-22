@@ -48,6 +48,7 @@ const TransactionForm = ({
   hasFiltersApplied,
   hasActiveFilters,
   tags,
+  tagSuggestions = [],
 }) => {
   return (
     <FormCard>
@@ -112,7 +113,58 @@ const TransactionForm = ({
           <Col xs={16} sm={7}>
             <NoMarginFormItem>
               <Form.Item name="tag_list">
-                <FullWidthSelect mode="tags" placeholder="Add tags...">
+                <FullWidthSelect
+                  mode="tags"
+                  placeholder="Add tags..."
+                  dropdownRender={(menu) => (
+                    <>
+                      {tagSuggestions && tagSuggestions.length > 0 && (
+                        <div
+                          style={{
+                            padding: "8px 12px",
+                            borderBottom: "1px solid #eee",
+                            background: "#fafafa",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontWeight: 500,
+                              color: "#888",
+                              fontSize: 12,
+                            }}
+                          >
+                            Suggestions:{" "}
+                          </span>
+                          {tagSuggestions.map((tag) => (
+                            <span
+                              key={tag}
+                              style={{
+                                display: "inline-block",
+                                background: "#e6f7ff",
+                                color: "#1677ff",
+                                borderRadius: 4,
+                                padding: "2px 8px",
+                                marginRight: 6,
+                                fontSize: 12,
+                                cursor: "pointer",
+                              }}
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                const current = form.getFieldValue("tag_list") || [];
+                                if (!current.includes(tag)) {
+                                  form.setFieldsValue({ tag_list: [...current, tag] });
+                                }
+                              }}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {menu}
+                    </>
+                  )}
+                >
                   {tags.map((tag) => (
                     <Option key={tag} value={tag}>
                       {tag}

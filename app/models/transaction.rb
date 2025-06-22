@@ -19,4 +19,14 @@ class Transaction < ApplicationRecord
     "$#{amount.to_f}"
   end
 
+  def self.transactions_on_subtags(main_tag, sub_tags)
+    sub_tags.each do |sub_tag|
+      tags = [main_tag] + sub_tag
+      # Fetch transactions that have ANY of the tags (OR logic)
+      @transactions = Transaction.tagged_with(tags)
+      puts "Transactions: #{@transactions.map(&:name).join(', ')}"
+      puts "-----------------------------------"
+    end
+  end
+
 end

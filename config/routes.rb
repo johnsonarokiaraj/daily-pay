@@ -15,7 +15,13 @@ Rails.application.routes.draw do
     resources :tags, defaults: { format: :json }
     resources :closures, defaults: { format: :json }
     resources :views, defaults: { format: :json }
-    resources :backups, only: [:index], defaults: { format: :json }
+    resources :backups, only: [:index], defaults: { format: :json } do
+      collection do
+        post :upload_to_drive
+        get :folder_id
+        post :folder_id, action: :set_folder_id
+      end
+    end
   end
 
   # Serve backup files for download

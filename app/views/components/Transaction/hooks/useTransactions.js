@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { message } from "antd";
 import dayjs from "dayjs";
 import axios from "axios";
@@ -254,6 +254,29 @@ export const useTransactions = () => {
     );
   };
 
+  // Tag suggestions based on previous transactions
+  const tagSuggestions = useMemo(() => {
+    const tagCount = {};
+    transactions.forEach((tx) => {
+      if (Array.isArray(tx.tag_list)) {
+        tx.tag_list.forEach((tag) => {
+          tagCount[tag] = (tagCount[tag] || 0) + 1;
+        });
+      } else if (typeof tx.tag_list === "string" && tx.tag_list) {
+        // If tag_list is a comma-separated string
+        tx.tag_list.split(",").forEach((tag) => {
+          tag = tag.trim();
+          if (tag) tagCount[tag] = (tagCount[tag] || 0) + 1;
+        });
+      }
+    });
+    // Sort tags by frequency, descending
+    return Object.entries(tagCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([tag]) => tag);
+  }, [transactions]);
+
   // Load data on component mount
   useEffect(() => {
     fetchTransactions();
@@ -330,5 +353,6 @@ export const useTransactions = () => {
     applySavedView,
     hasFiltersApplied,
     hasActiveFilters,
+    tagSuggestions,
   };
 };

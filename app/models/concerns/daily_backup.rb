@@ -35,8 +35,51 @@ module DailyBackup
 
     # Remove old backups, keep only the latest two
     all_backups = Dir.glob(backup_dir.join('db_data_*.sql')).sort.reverse
-    if all_backups.size > 2
-      all_backups[2..-1].each { |old_file| File.delete(old_file) }
+    if all_backups.size > 10
+      all_backups[10..-1].each { |old_file| File.delete(old_file) }
     end
+
+    # Automatically upload the new backup to Google Drive
+    if File.exist?(backup_file)
+      20.times do
+        break if File.size?(backup_file).to_i > 0
+        sleep 0.1
+      end
+      upload_backup_to_google_drive(backup_file) if File.size?(backup_file).to_i > 0
+    end
+  end
+
+  def upload_backup_to_google_drive(backup_file)
+    require 'google/apis/drive_v3'
+    require 'googleauth'
+    require 'yaml'
+
+    # Google Drive API setup
+    drive_service = Google::Apis::DriveV3::DriveService.new
+    drive_service.client_options.application_name = 'DailyPay Backup Upload'
+    credentials_path = ENV['GOOGLE_DRIVE_CREDENTIALS'] || Rails.root.join('config', 'google_drive_service_account.json')
+    drive_service.authorization = Google::Auth::ServiceAccountCredentials.make_creds(
+      json_key_io: File.open(credentials_path),
+      scope: ['https://www.googleapis.com/auth/drive.file']
+    )
+
+    # Get Google Drive folder ID from config or ENV
+    config_path = Rails.root.join('config', 'google_drive_config.yml')
+    folder_id = if File.exist?(config_path)
+      config = YAML.load_file(config_path)
+      config['folder_id']
+    else
+      Rails.application.config.google_drive_folder_id
+    end
+
+    file_metadata = { name: File.basename(backup_file) }
+    file_metadata[:parents] = [folder_id] if folder_id.present?
+    drive_service.create_file(
+      file_metadata,
+      upload_source: backup_file,
+      content_type: 'application/sql'
+    )
+  rescue => e
+    Rails.logger.error("Google Drive upload failed: #{e.message}")
   end
 end

@@ -22,10 +22,12 @@ const StatisticValue = {
   total: { color: "#c85ea2" },
   debit: { color: "#7385d5" },
   credit: { color: "#16a34a" },
+  balance: { color: "#f59e0b" },
   period: { color: "#f59e0b" },
 };
 
 const TransactionStats = ({ stats, currentDateRange }) => {
+  const balance = (stats.credit || 0) - (stats.debit || 0);
   return (
     <StatsRow gutter={[16, 16]}>
       <Col xs={24} sm={12} md={6}>
@@ -60,6 +62,17 @@ const TransactionStats = ({ stats, currentDateRange }) => {
         </Card>
       </Col>
       <Col xs={24} sm={12} md={6}>
+        <Card>
+          <Statistic
+            title="Balance"
+            value={balance}
+            precision={2}
+            prefix="₹"
+            valueStyle={StatisticValue.balance}
+          />
+        </Card>
+      </Col>
+      <Col xs={24} sm={24} md={24}>
         <Card>
           <CustomLabel>Current Period</CustomLabel>
           <PeriodText>

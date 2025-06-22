@@ -88,6 +88,13 @@ class Api::TransactionsController < ApplicationController
     end
   end
 
+  def monthly_dashboard(params)
+    @monthly_tag  = params[:monthly_tag]
+    @sub_tags = [["personal"], ["Parents", "Home expense"], ["Yosh", "Home expense"], ["Bills"], ["Extras"], ["Adhya"], ["Vyom"], ["Home loan"], ["Land loan"], ["Insurance"], ["Top up loan"]]
+    Transaction.transactions_on_subtags(@monthly_tag, @sub_tags)
+  end
+
+
   private
   
   def transaction_json(transaction)
