@@ -27,6 +27,8 @@ import TagsApp from "./TagsApp";
 import ViewsApp from "./ViewsApp";
 import DataBackupApp from "./DataBackupApp";
 import TargetsApp from "./TargetsApp";
+import CompareViewsDashboard from "./Transaction/CompareViewsDashboard";
+import TagInsightsBoardDetail from "./Transaction/TagInsightsBoardDetail";
 
 const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
@@ -44,6 +46,7 @@ const AppContent = () => {
     if (path === "/views") return "views";
     if (path === "/backup") return "backup";
     if (path === "/targets") return "targets";
+    if (path === "/compare") return "compare";
     return "transactions";
   };
 
@@ -85,6 +88,12 @@ const AppContent = () => {
       icon: <WalletOutlined />,
       label: "Targets",
       path: "/targets",
+    },
+    {
+      key: "compare",
+      icon: <BarChartOutlined />,
+      label: "Compare Dashboard",
+      path: "/compare",
     },
   ];
 
@@ -178,6 +187,8 @@ const AppContent = () => {
             <Route path="/views" element={<ViewsApp />} />
             <Route path="/backup" element={<DataBackupApp />} />
             <Route path="/targets" element={<TargetsApp />} />
+            <Route path="/compare" element={<CompareViewsDashboard />} />
+            <Route path="/tag_insights_boards/:id" element={<TagInsightsBoardDetail />} />
             <Route path="*" element={<Navigate to="/transactions" replace />} />
           </Routes>
         </Content>

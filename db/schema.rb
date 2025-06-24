@@ -10,7 +10,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_06_19_120000) do
+ActiveRecord::Schema[7.1].define(version: 2025_06_24_120000) do
+  create_table "tag_insights_board_records", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "main_tag", null: false
+    t.text "sub_tags"
+    t.integer "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "taggings", force: :cascade do |t|
     t.integer "tag_id"
     t.string "taggable_type"
@@ -55,7 +64,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_19_120000) do
 
   create_table "transactions", force: :cascade do |t|
     t.string "name", limit: 191, null: false
-    t.integer "amount", null: false
+    t.decimal "amount", precision: 15, scale: 2, null: false
     t.date "transaction_date", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
