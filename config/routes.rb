@@ -59,4 +59,7 @@ Rails.application.routes.draw do
   get "*path", to: "home#index", constraints: ->(request) do
     !request.xhr? && request.format.html?
   end
+
+  # SPA catch-all route for React
+  get '*path', to: 'home#index', constraints: ->(req) { !req.xhr? && req.format.html? }
 end

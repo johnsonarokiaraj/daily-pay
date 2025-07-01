@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Card, Typography, Button, Modal, Form, Input, Select, Table, Space, message } from "antd";
 import { Link, useNavigate } from "react-router-dom";
+import { formatIndianCurrency } from "../../../javascript/utils/indianCurrency";
 
 const { Title } = Typography;
 const { Option } = Select;
 
 export default function CompareViewsDashboard() {
   const [boards, setBoards] = useState([]);
+  const [boardsWithFinancials, setBoardsWithFinancials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -22,6 +24,7 @@ export default function CompareViewsDashboard() {
       .then((res) => res.json())
       .then((data) => {
         setBoards(data);
+        fetchFinancialData(data);
         setLoading(false);
       });
   }, []);
@@ -101,6 +104,80 @@ export default function CompareViewsDashboard() {
       });
   };
 
+  // Fetch financial data for all boards
+  const fetchFinancialData = async (boardsData) => {
+    const boardsWithFinancials = await Promise.all(
+      boardsData.map(async (board) => {
+        try {
+          // Extract the actual board data from nested structure if needed
+          const actualBoardData = board.board || board;
+
+          // Validate board data - check both flat and nested structures
+          if (!actualBoardData || !actualBoardData.id) {
+            console.error("Invalid board data:", board);
+            return {
+              ...actualBoardData,
+              credit_sum: 0,
+              debit_sum: 0,
+              balance: 0
+            };
+          }
+
+          const response = await fetch(`/api/tag_insights_boards/${actualBoardData.id}`);
+
+          // Check if response is ok before trying to parse JSON
+          if (!response.ok) {
+            throw new Error(`API responded with status ${response.status}`);
+          }
+
+          // Check content type to ensure we're getting JSON
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            throw new Error(`Expected JSON but got ${contentType}`);
+          }
+
+          const responseData = await response.json();
+
+          // If the API returns data with credit_sum, debit_sum, and balance at the top level,
+          // use these values directly regardless of nested structure
+          if (responseData.credit_sum !== undefined &&
+              responseData.debit_sum !== undefined &&
+              responseData.balance !== undefined) {
+
+            return {
+              ...actualBoardData,
+              credit_sum: responseData.credit_sum,
+              debit_sum: responseData.debit_sum,
+              balance: responseData.balance
+            };
+          }
+
+          // Otherwise try to extract financial data from the flattened data structure
+          const data = responseData;
+          const mainTagData = data.flattened && data.flattened.find(row => row.type === 'main_tag');
+
+          return {
+            ...actualBoardData,
+            credit_sum: mainTagData ? mainTagData.credit_sum : 0,
+            debit_sum: mainTagData ? mainTagData.debit_sum : 0,
+            balance: mainTagData ? mainTagData.sum : 0
+          };
+        } catch (error) {
+          const actualBoardData = board.board || board;
+          const boardId = actualBoardData && actualBoardData.id;
+          console.error(`Error fetching financial data for board ${boardId || 'unknown'}:`, error);
+          return {
+            ...actualBoardData,
+            credit_sum: 0,
+            debit_sum: 0,
+            balance: 0
+          };
+        }
+      })
+    );
+    setBoardsWithFinancials(boardsWithFinancials);
+  };
+
   // Table columns for boards
   const columns = [
     {
@@ -112,15 +189,35 @@ export default function CompareViewsDashboard() {
       ),
     },
     {
-      title: "Main Tag",
-      dataIndex: "main_tag",
-      key: "main_tag",
-    },
-    {
-      title: "Sub Tags",
-      dataIndex: "sub_tags",
-      key: "sub_tags",
-      render: (tags) => Array.isArray(tags) ? tags.join(", ") : tags,
+      title: "Financial Summary",
+      key: "financial_summary",
+      render: (_, record) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{
+            color: '#166534',
+            fontWeight: 600,
+            fontSize: '14px'
+          }}>
+            Credit: {formatIndianCurrency(record.credit_sum || 0)}
+          </span>
+          <span style={{ color: '#9ca3af', fontSize: '14px' }}>|</span>
+          <span style={{
+            color: '#991b1b',
+            fontWeight: 600,
+            fontSize: '14px'
+          }}>
+            Debit: {formatIndianCurrency(record.debit_sum || 0)}
+          </span>
+          <span style={{ color: '#9ca3af', fontSize: '14px' }}>|</span>
+          <span style={{
+            color: '#1e40af',
+            fontWeight: 700,
+            fontSize: '14px'
+          }}>
+            Balance: {formatIndianCurrency(record.balance || 0)}
+          </span>
+        </div>
+      ),
     },
     {
       title: "Actions",
@@ -249,7 +346,7 @@ export default function CompareViewsDashboard() {
       <div style={{ marginTop: 32 }}>
         <Table
           columns={columns}
-          dataSource={boards}
+          dataSource={boardsWithFinancials.length > 0 ? boardsWithFinancials : boards}
           loading={loading}
           rowKey="id"
           pagination={{ pageSize: 10, showSizeChanger: true, showQuickJumper: true }}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import {
   Table,
   Form,
@@ -18,6 +18,7 @@ import {
   EditOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import {
@@ -207,6 +208,41 @@ const TransactionTable = ({
     });
   };
 
+  const [activeTagInputRowId, setActiveTagInputRowId] = useState(null);
+  const tagInputRef = useRef(null);
+
+  // Handler to remove a tag from a transaction
+  const handleRemoveTag = (record, tagToRemove) => {
+    const newTags = record.tag_list.filter((t) => t !== tagToRemove);
+    onUpdate({ ...record, tag_list: newTags, id: record.id }); // Ensure id is always present
+  };
+
+  // Handler to add a tag to a transaction
+  const handleAddTag = (record, newTag) => {
+    if (!newTag || record.tag_list.includes(newTag)) return;
+    const newTags = [...record.tag_list, newTag];
+    onUpdate({ ...record, tag_list: newTags, id: record.id }); // Ensure id is always present
+    setActiveTagInputRowId(null); // Hide input after adding
+  };
+
+  // Hide tag input when clicking outside
+  React.useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        tagInputRef.current &&
+        !tagInputRef.current.contains(event.target)
+      ) {
+        setActiveTagInputRowId(null);
+      }
+    }
+    if (activeTagInputRowId !== null) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [activeTagInputRowId]);
+
   const columns = [
     {
       title: (
@@ -352,15 +388,70 @@ const TransactionTable = ({
           );
         }
         return (
-          <TagsContainer size={[0, 8]} wrap>
-            {recordTags && recordTags.map
-              ? recordTags.map((tag, index) => (
-                  <Tag key={index} color={"purple"}>
-                    {tag}
-                  </Tag>
-                ))
-              : null}
-          </TagsContainer>
+          <div style={{ position: "relative", minHeight: 32 }}>
+            <TagsContainer
+              size={[0, 8]}
+              wrap
+              style={{ display: "inline-flex", flexWrap: "wrap", minHeight: 32, position: "relative", zIndex: 2, pointerEvents: "auto" }}
+            >
+              {recordTags && recordTags.map
+                ? recordTags.map((tag, index) => (
+                    <span key={index} onMouseDown={e => e.stopPropagation()} style={{ pointerEvents: "auto" }}>
+                      <Tag
+                        color={"purple"}
+                        closable
+                        onClose={e => {
+                          e.stopPropagation();
+                          handleRemoveTag(record, tag);
+                        }}
+                        style={{ userSelect: "none", marginBottom: 4 }}
+                      >
+                        {tag}
+                      </Tag>
+                    </span>
+                  ))
+                : null}
+              {activeTagInputRowId === record.id && (
+                <span ref={tagInputRef}>
+                  <Select
+                    size="small"
+                    mode="tags"
+                    style={{ minWidth: 80, marginLeft: 4 }}
+                    placeholder="Add tag"
+                    onSelect={value => handleAddTag(record, value)}
+                    showArrow={false}
+                    showSearch={false}
+                    open
+                    dropdownRender={menu => menu}
+                    suffixIcon={<PlusOutlined />}
+                    autoFocus
+                  />
+                </span>
+              )}
+            </TagsContainer>
+            {/* Overlay for empty space click, pointerEvents none so tags are clickable */}
+            {activeTagInputRowId !== record.id && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  zIndex: 1,
+                  cursor: "pointer",
+                  background: "transparent",
+                  pointerEvents: "auto"
+                }}
+                onClick={e => {
+                  // Only trigger if the click is not on a tag
+                  if (e.target === e.currentTarget) {
+                    setActiveTagInputRowId(record.id);
+                  }
+                }}
+              />
+            )}
+          </div>
         );
       },
       ...getTagSearchProps(),

@@ -4,9 +4,24 @@ class Transaction < ApplicationRecord
   acts_as_taggable_on :tags
 
   validate :validate_transaction
+  before_save :auto_tagging
+
 
   def validate_transaction
     validate_name(:name, "Transcation name")
+  end
+
+  def auto_tagging
+    current_tags = self.tag_list.map(&:downcase)
+    AutoTagRule.all.each do |rule|
+      required_tags = rule.required_tags.map(&:downcase)
+      auto_tags = rule.auto_tags
+      if required_tags.all? { |t| current_tags.include?(t) }
+        auto_tags.each do |auto_tag|
+          self.tag_list.add(auto_tag.capitalize) unless current_tags.include?(auto_tag.downcase)
+        end
+      end
+    end
   end
 
   def tag_list=(names)
@@ -29,16 +44,21 @@ class Transaction < ApplicationRecord
           id: t.id,
           name: t.name,
           amount: t.amount.to_f,
+          is_credit: t.is_credit,
+          transaction_date: t.transaction_date,
           created_at: t.created_at,
           updated_at: t.updated_at
         }
       end
-      sum = transactions.pluck(:amount).map(&:to_f).sum
+      credit_sum = transactions.where(is_credit: true).pluck(:amount).map(&:to_f).sum
+      debit_sum = transactions.where(is_credit: false).pluck(:amount).map(&:to_f).sum
+
       avg = transactions.any? ? sum / transactions.size : 0.0
       result[main_tag] << {
         sub_tag => {
           transactions: transaction_hashes,
-          sum: sum,
+          credit_sum: credit_sum,
+          debit_sum: debit_sum,
           average: avg,
           count: transactions.size
         }
@@ -62,14 +82,46 @@ class TagInsightsBoard
   def flattened_view
     result = []
     main_tag_data = @data[@main_tag]
-    main_sum = main_tag_data.sum { |h| h.values.first[:sum] }
+
+    # Calculate main tag totals from credit and debit sums
+    main_credit_sum = main_tag_data.sum { |h| h.values.first[:credit_sum] }
+    main_debit_sum = main_tag_data.sum { |h| h.values.first[:debit_sum] }
+    main_total_sum = main_credit_sum - main_debit_sum
     main_count = main_tag_data.sum { |h| h.values.first[:count] }
-    result << { type: :main_tag, tag: @main_tag, sum: main_sum, count: main_count }
+
+    result << {
+      type: :main_tag,
+      tag: @main_tag,
+      sum: main_total_sum,
+      credit_sum: main_credit_sum,
+      debit_sum: main_debit_sum,
+      count: main_count
+    }
+
     main_tag_data.each do |subtag_hash|
       sub_tag, details = subtag_hash.first
-      result << { type: :sub_tag, tag: sub_tag, sum: details[:sum], count: details[:count] }
+
+      # Add sub tag with credit, debit, and balance info
+      result << {
+        type: :sub_tag,
+        tag: sub_tag,
+        sum: details[:credit_sum] - details[:debit_sum],
+        credit_sum: details[:credit_sum],
+        debit_sum: details[:debit_sum],
+        count: details[:count],
+        balance: details[:credit_sum] - details[:debit_sum]
+      }
+
       details[:transactions].each do |txn|
-        result << { type: :transaction, date: txn[:created_at], name: txn[:name], amount: txn[:amount], tags: [@main_tag, sub_tag] }
+        # Include is_credit info in transaction entries
+        result << {
+          type: :transaction,
+          date: txn[:transaction_date],
+          name: txn[:name],
+          amount: txn[:amount],
+          is_credit: txn[:is_credit],
+          tags: [@main_tag, sub_tag]
+        }
       end
     end
     result

@@ -63,21 +63,30 @@ module DailyBackup
       scope: ['https://www.googleapis.com/auth/drive.file']
     )
 
-    # Get Google Drive folder ID from config or ENV
+    # Get Google Drive folder and shared drive IDs from config or ENV
     config_path = Rails.root.join('config', 'google_drive_config.yml')
-    folder_id = if File.exist?(config_path)
+    folder_id = nil
+    shared_drive_id = nil
+    if File.exist?(config_path)
       config = YAML.load_file(config_path)
-      config['folder_id']
+      folder_id = config['folder_id']
+      shared_drive_id = config['shared_drive_id']
     else
-      Rails.application.config.google_drive_folder_id
+      folder_id = Rails.application.config.google_drive_folder_id
+      shared_drive_id = Rails.application.config.google_drive_shared_drive_id
     end
 
     file_metadata = { name: File.basename(backup_file) }
     file_metadata[:parents] = [folder_id] if folder_id.present?
+
+    # Use supportsAllDrives and shared driveId if provided
     drive_service.create_file(
       file_metadata,
       upload_source: backup_file,
-      content_type: 'application/sql'
+      content_type: 'application/sql',
+      supports_all_drives: true,
+      fields: 'id',
+      drive_id: shared_drive_id
     )
   rescue => e
     Rails.logger.error("Google Drive upload failed: #{e.message}")

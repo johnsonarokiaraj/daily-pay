@@ -19,6 +19,7 @@ class Target < ApplicationRecord
   validates :value, presence: true, numericality: true
   validates :target_date, presence: true
   validates :view_id, presence: true
+  validates :name, presence: true
 
   # Returns chart data for the target (balance/credit/debit over time)
   def self.progress_data_for(target)

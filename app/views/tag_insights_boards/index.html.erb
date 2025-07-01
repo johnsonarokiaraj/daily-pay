@@ -7,24 +7,29 @@
     <thead>
       <tr style="background: #f0f5ff;">
         <th style="padding: 10px 8px; text-align: left; color: #2b3a55; font-weight: 600;">Name</th>
-        <th style="padding: 10px 8px; text-align: left; color: #2b3a55; font-weight: 600;">Main Tag</th>
-        <th style="padding: 10px 8px; text-align: left; color: #2b3a55; font-weight: 600;">Sub Tags</th>
+        <th style="padding: 10px 8px; text-align: left; color: #2b3a55; font-weight: 600;">Financial Summary</th>
         <th style="padding: 10px 8px; text-align: left; color: #2b3a55; font-weight: 600;">Actions</th>
       </tr>
     </thead>
     <tbody>
-      <% @boards.each do |board| %>
+      <% @boards_with_financials.each do |board_data| %>
+        <% board = board_data[:board] %>
         <tr style="border-bottom: 1px solid #f0f0f0;">
           <td style="padding: 10px 8px; font-weight: 500; color: #1677ff;">
             <%= link_to board.name, tag_insights_board_path(board), style: 'text-decoration: none; color: #1677ff;' %>
           </td>
           <td style="padding: 10px 8px;">
-            <span style="background: #e6f4ff; color: #1677ff; border-radius: 4px; padding: 2px 10px; font-weight: 600;"> <%= board.main_tag %> </span>
-          </td>
-          <td style="padding: 10px 8px;">
-            <% Array(board.sub_tags).each do |tag| %>
-              <span style="background: #f0f5ff; color: #2b3a55; border-radius: 4px; padding: 2px 10px; margin-right: 6px; font-weight: 500;"> <%= tag %> </span>
-            <% end %>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <span style="background: #f6ffed; color: #52c41a; border-radius: 4px; padding: 2px 8px; font-weight: 600; border: 1px solid #b7eb8f;">
+                Credit: ₹<%= board_data[:credit_sum] %>
+              </span>
+              <span style="background: #fff2f0; color: #ff4d4f; border-radius: 4px; padding: 2px 8px; font-weight: 600; border: 1px solid #ffccc7;">
+                Debit: ₹<%= board_data[:debit_sum] %>
+              </span>
+              <span style="background: #f0f5ff; color: #1677ff; border-radius: 4px; padding: 2px 8px; font-weight: 600; border: 1px solid #adc6ff;">
+                Balance: ₹<%= board_data[:balance] %>
+              </span>
+            </div>
           </td>
           <td style="padding: 10px 8px;">
             <%= link_to 'View', tag_insights_board_path(board), style: 'color: #1677ff; font-weight: 500; margin-right: 10px; text-decoration: none;' %>
@@ -35,4 +40,3 @@
     </tbody>
   </table>
 </div>
-

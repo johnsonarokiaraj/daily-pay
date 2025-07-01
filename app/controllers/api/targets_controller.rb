@@ -54,6 +54,6 @@ class Api::TargetsController < ApplicationController
   end
 
   def target_params
-    params.require(:target).permit(:view_id, :target_type, :value, :target_date)
+    params.require(:target).permit(:view_id, :target_type, :value, :target_date, :name)
   end
 end

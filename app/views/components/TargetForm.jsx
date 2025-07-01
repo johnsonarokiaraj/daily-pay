@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, InputNumber, DatePicker, Select, Button, message } from 'antd';
+import { Modal, Form, InputNumber, DatePicker, Select, Button, message, Input } from 'antd';
 import { createTarget, updateTarget, fetchViews } from './api/targetsApi';
 import dayjs from 'dayjs';
 
@@ -91,7 +91,10 @@ export default function TargetForm({ visible, target, onClose }) {
       destroyOnClose
     >
       <Form form={form} layout="vertical">
-        <Form.Item name="view_id" label="View" rules={[{ required: true }]}> 
+        <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please enter a name for the target' }]}>
+          <Input />
+        </Form.Item>
+        <Form.Item name="view_id" label="View" rules={[{ required: true }]}>
           <Select 
             options={views.map(v => ({ label: v.name, value: v.id }))} 
             showSearch 

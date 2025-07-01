@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Table, Button, Modal, message } from 'antd';
 import TargetForm from './TargetForm';
 import TargetDetail from './TargetDetail';
+import TargetProgressBar from './TargetProgressBar';
 import { fetchTargets, deleteTarget } from './api/targetsApi';
 
 export default function TargetsApp() {
@@ -58,22 +59,22 @@ export default function TargetsApp() {
           dataSource={targets}
           rowKey="id"
           loading={loading}
+          pagination={false}
+          bordered
           columns={[
-            { title: 'View', dataIndex: 'view_id' },
-            { title: 'Type', dataIndex: 'target_type' },
-            { title: 'Value', dataIndex: 'value' },
-            { title: 'Date', dataIndex: 'target_date' },
             {
-              title: 'Actions',
-              render: (_, record) => (
-                <>
-                  <Button size="small" onClick={() => handleShowDetail(record)} style={{ marginRight: 8 }}>View</Button>
-                  <Button size="small" onClick={() => handleEdit(record)} style={{ marginRight: 8 }}>Edit</Button>
-                  <Button size="small" danger onClick={() => handleDelete(record.id)}>Delete</Button>
-                </>
+              title: 'Name',
+              dataIndex: 'name',
+              render: (text, record) => (
+                <a style={{ fontWeight: 500 }} onClick={() => handleShowDetail(record)}>{text}</a>
               ),
             },
+            {
+              title: 'Progress',
+              render: (_, record) => <TargetProgressBar target={record} />,
+            },
           ]}
+          className="targets-table"
         />
       ) : (
         <TargetDetail target={detailTarget} onBack={() => setShowDetail(false)} />

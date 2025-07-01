@@ -108,24 +108,32 @@ export const useTransactions = () => {
 
   const handleUpdateTransaction = async (values) => {
     try {
+      const transactionId = values.id || (editingTransaction && editingTransaction.id);
+      if (!transactionId) {
+        message.error("No transaction ID provided");
+        return false;
+      }
       const data = {
         ...values,
-        transaction_date: values.transaction_date.format("DD-MM-YYYY"),
+        transaction_date: values.transaction_date && values.transaction_date.format
+          ? values.transaction_date.format("DD-MM-YYYY")
+          : values.transaction_date,
         tag_list:
-          values.tag_list && values.tag_list.join
-            ? values.tag_list.join(",")
-            : "",
+          Array.isArray(values.tag_list)
+            ? values.tag_list
+            : (typeof values.tag_list === "string" ? values.tag_list.split(",").map(t => t.trim()).filter(Boolean) : []),
         is_credit: values.is_credit || false,
       };
 
-      await axios.patch(`/api/transactions/${editingTransaction.id}`, {
-        transaction: data,
+      await axios.patch(`/api/transactions/${transactionId}`, {
+        transaction: {
+          ...data,
+          tag_list: Array.isArray(data.tag_list) ? data.tag_list.join(",") : data.tag_list
+        },
       });
       message.success("Transaction updated successfully");
 
       setEditingTransaction(null);
-
-      // Preserve current filters when refreshing data
       fetchTransactions(currentFilters);
       return true;
     } catch (error) {

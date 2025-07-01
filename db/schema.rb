@@ -10,7 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_06_24_120000) do
+ActiveRecord::Schema[7.1].define(version: 2025_06_26_153535) do
+  create_table "auto_tag_rules", force: :cascade do |t|
+    t.text "required_tags"
+    t.text "auto_tags"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "tag_insights_board_records", force: :cascade do |t|
     t.string "name", null: false
     t.string "main_tag", null: false
@@ -58,6 +65,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_24_120000) do
     t.date "target_date", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "name"
     t.index ["view_id", "target_type", "target_date"], name: "index_targets_on_view_id_and_target_type_and_target_date", unique: true
     t.index ["view_id"], name: "index_targets_on_view_id"
   end

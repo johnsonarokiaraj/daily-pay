@@ -19,6 +19,7 @@ import {
   CloudDownloadOutlined,
   EyeOutlined,
 } from "@ant-design/icons";
+import DailyPayLogo from "../../javascript/components/DailyPayLogo";
 
 // Import components
 import TransactionApp from "./TransactionApp";
@@ -101,24 +102,21 @@ const AppContent = () => {
     <Layout style={{ minHeight: "100vh" }}>
       {/* Sidebar */}
       <Sider width={250} breakpoint="lg" collapsedWidth="0">
+        {/* Logo positioned inside sidebar above the menu - made bigger to fit complete space */}
         <div
           style={{
-            padding: "24px 16px",
-            textAlign: "center",
+            padding: "32px 16px",
             borderBottom: "1px solid rgba(255,255,255,0.1)",
             marginBottom: "16px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "120px",
+            background:
+              "linear-gradient(135deg, rgba(22, 119, 255, 0.1), rgba(105, 192, 255, 0.05))",
           }}
         >
-          <Title
-            level={3}
-            style={{
-              color: "white",
-              margin: 0,
-              fontWeight: "bold",
-            }}
-          >
-            💰 Daily Pay
-          </Title>
+          <DailyPayLogo size={64} variant="light" showText={true} />
         </div>
 
         <Menu
@@ -188,7 +186,10 @@ const AppContent = () => {
             <Route path="/backup" element={<DataBackupApp />} />
             <Route path="/targets" element={<TargetsApp />} />
             <Route path="/compare" element={<CompareViewsDashboard />} />
-            <Route path="/tag_insights_boards/:id" element={<TagInsightsBoardDetail />} />
+            <Route
+              path="/tag_insights_boards/:id"
+              element={<TagInsightsBoardDetail />}
+            />
             <Route path="*" element={<Navigate to="/transactions" replace />} />
           </Routes>
         </Content>

@@ -1,4 +1,5 @@
 const { environment } = require('@rails/webpacker')
+const webpack = require('webpack')
 
 // Add support for JSX and React
 environment.loaders.prepend('babel', {
@@ -10,8 +11,22 @@ environment.loaders.prepend('babel', {
   }
 })
 
-// Patch: Transpile chart.js in node_modules (for static class fields)
-environment.loaders.get('babel').exclude = /node_modules\/(?!chart\.js)/;
+// Patch: Transpile chart.js, @ant-design/charts, @ant-design/graphs, and @antv/* in node_modules
+const transpileNodeModules = [
+  /node_modules\/chart\.js/,
+  /node_modules\/@ant-design\/charts/,
+  /node_modules\/@ant-design\/graphs/,
+  /node_modules\/@antv/
+];
+
+const babelLoader = environment.loaders.get('babel');
+babelLoader.exclude = (modulePath) => {
+  // Exclude all node_modules except the ones we want to transpile
+  if (/node_modules/.test(modulePath)) {
+    return !transpileNodeModules.some((regex) => regex.test(modulePath));
+  }
+  return false;
+};
 
 // Add support for Less files (for Ant Design)
 environment.loaders.prepend('less', {
@@ -37,5 +52,12 @@ environment.loaders.prepend('less', {
     },
   ],
 })
+
+// Ignore @antv/layout/lib/worker.js to avoid import.meta.url errors
+environment.plugins.append('IgnoreAntvLayoutWorker',
+  new webpack.IgnorePlugin({
+    resourceRegExp: /@antv\/layout\/lib\/worker\.js$/
+  })
+);
 
 module.exports = environment
