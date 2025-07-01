@@ -10,6 +10,7 @@ import {
   Button,
   Typography,
   Switch,
+  message,
 } from "antd";
 import {
   CalendarOutlined,
@@ -64,6 +65,93 @@ const TransactionTable = ({
   onReset,
   form,
 }) => {
+  // State for inline editing
+  const [editingCell, setEditingCell] = useState(null); // { recordId, field }
+  const [editingValue, setEditingValue] = useState('');
+  const [originalValue, setOriginalValue] = useState(''); // Store original value for comparison
+  const inputRef = useRef(null);
+
+  // Save inline edit
+  const handleInlineSave = async (record, field, value) => {
+    try {
+      // Check if value actually changed
+      let hasChanged = false;
+      let updateData = { ...record, id: record.id };
+
+      if (field === 'transaction_date') {
+        const newDateString = value.format('DD-MM-YYYY');
+        hasChanged = newDateString !== originalValue;
+        if (hasChanged) {
+          updateData.transaction_date = newDateString;
+        }
+      } else if (field === 'amount') {
+        const newAmount = parseFloat(value) || 0;
+        hasChanged = newAmount !== originalValue;
+        if (hasChanged) {
+          updateData.amount = newAmount;
+        }
+      } else if (field === 'is_credit') {
+        hasChanged = value !== originalValue;
+        if (hasChanged) {
+          updateData.is_credit = value;
+        }
+      } else {
+        hasChanged = value !== originalValue;
+        if (hasChanged) {
+          updateData[field] = value;
+        }
+      }
+
+      // Reset editing state first
+      setEditingCell(null);
+      setEditingValue('');
+      setOriginalValue('');
+
+      // Only call backend if there was actually a change
+      if (hasChanged) {
+        await onUpdate(updateData);
+        message.success('Transaction updated successfully');
+      }
+    } catch (error) {
+      message.error('Failed to update transaction');
+    }
+  };
+
+  // Cancel inline edit
+  const handleInlineCancel = () => {
+    setEditingCell(null);
+    setEditingValue('');
+  };
+
+  // Start inline edit
+  const startInlineEdit = (record, field, currentValue) => {
+    setEditingCell({ recordId: record.id, field });
+
+    let valueToEdit, originalVal;
+    if (field === 'transaction_date') {
+      valueToEdit = parseTransactionDate(currentValue);
+      originalVal = currentValue; // Store original date string
+    } else if (field === 'amount') {
+      valueToEdit = Math.abs(currentValue);
+      originalVal = Math.abs(currentValue); // Store original amount
+    } else if (field === 'is_credit') {
+      valueToEdit = currentValue;
+      originalVal = currentValue; // Store original boolean
+    } else {
+      valueToEdit = currentValue;
+      originalVal = currentValue; // Store original string
+    }
+
+    setEditingValue(valueToEdit);
+    setOriginalValue(originalVal);
+
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, 100);
+  };
+
   // Search functionality for table columns
   const getColumnSearchProps = (dataIndex, placeholder = "Search") => ({
     filterDropdown: ({
@@ -253,25 +341,36 @@ const TransactionTable = ({
       dataIndex: "transaction_date",
       key: "transaction_date",
       render: (date, record) => {
-        if (editingTransaction && editingTransaction.id === record.id) {
+        const isEditing = editingCell && editingCell.recordId === record.id && editingCell.field === 'transaction_date';
+
+        if (isEditing) {
           return (
-            <FormItemWrapper>
-              <Form.Item
-                name="transaction_date"
-                rules={[{ required: true, message: "Please select date" }]}
-              >
-                <DatePicker size="small" format="DD-MM-YYYY" />
-              </Form.Item>
-            </FormItemWrapper>
+            <DatePicker
+              ref={inputRef}
+              size="small"
+              format="DD-MM-YYYY"
+              value={editingValue}
+              onChange={setEditingValue}
+              onPressEnter={() => handleInlineSave(record, 'transaction_date', editingValue)}
+              onBlur={() => handleInlineSave(record, 'transaction_date', editingValue)}
+              autoFocus
+            />
           );
         }
 
         const formattedDate = formatDisplayDate(date);
-        return <Tag color="blue">{formattedDate}</Tag>;
+        return (
+          <Tag
+            color="blue"
+            style={{ cursor: 'pointer' }}
+            onClick={() => startInlineEdit(record, 'transaction_date', date)}
+          >
+            {formattedDate}
+          </Tag>
+        );
       },
       width: 150,
       sorter: (a, b) => {
-        // Parse dates for comparison
         const dateA = dayjs(a.transaction_date, "DD-MM-YYYY");
         const dateB = dayjs(b.transaction_date, "DD-MM-YYYY");
         return dateA.valueOf() - dateB.valueOf();
@@ -286,21 +385,31 @@ const TransactionTable = ({
       width: 300,
       ...getColumnSearchProps("name", "transaction name"),
       render: (text, record) => {
-        if (editingTransaction && editingTransaction.id === record.id) {
+        const isEditing = editingCell && editingCell.recordId === record.id && editingCell.field === 'name';
+
+        if (isEditing) {
           return (
-            <FormItemWrapper>
-              <Form.Item
-                name="name"
-                rules={[
-                  { required: true, message: "Please enter transaction name" },
-                ]}
-              >
-                <Input size="small" placeholder="Transaction name" />
-              </Form.Item>
-            </FormItemWrapper>
+            <Input
+              ref={inputRef}
+              size="small"
+              value={editingValue}
+              onChange={e => setEditingValue(e.target.value)}
+              onPressEnter={() => handleInlineSave(record, 'name', editingValue)}
+              onBlur={() => handleInlineSave(record, 'name', editingValue)}
+              placeholder="Transaction name"
+              autoFocus
+            />
           );
         }
-        return <span>{text}</span>;
+
+        return (
+          <span
+            style={{ cursor: 'pointer', display: 'block', padding: '4px 0' }}
+            onClick={() => startInlineEdit(record, 'name', text)}
+          >
+            {text}
+          </span>
+        );
       },
       sorter: (a, b) => a.name.localeCompare(b.name),
       sortDirections: ["ascend", "descend"],
@@ -310,49 +419,53 @@ const TransactionTable = ({
       dataIndex: "amount",
       key: "amount",
       render: (amount, record) => {
-        if (editingTransaction && editingTransaction.id === record.id) {
+        const isEditingAmount = editingCell && editingCell.recordId === record.id && editingCell.field === 'amount';
+
+        if (isEditingAmount) {
           return (
-            <AmountInputSpace
-              direction="horizontal"
-              size="small"
-              align="center"
-            >
-              <FormItemWrapper>
-                <Form.Item
-                  name="amount"
-                  rules={[{ required: true, message: "Please enter amount" }]}
-                  style={{ marginBottom: 0 }}
-                >
-                  <Input
-                    size="small"
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    prefix="₹"
-                    style={{ width: 120 }}
-                  />
-                </Form.Item>
-              </FormItemWrapper>
-              <FormItemWrapper>
-                <Form.Item
-                  name="is_credit"
-                  valuePropName="checked"
-                  style={{ marginBottom: 0 }}
-                >
-                  <Switch
-                    size="small"
-                    checkedChildren="Credit"
-                    unCheckedChildren="Debit"
-                  />
-                </Form.Item>
-              </FormItemWrapper>
-            </AmountInputSpace>
+            <Space direction="horizontal" size="small">
+              <Input
+                ref={inputRef}
+                size="small"
+                type="number"
+                step="0.01"
+                value={editingValue}
+                onChange={e => setEditingValue(e.target.value)}
+                onPressEnter={() => handleInlineSave(record, 'amount', editingValue)}
+                onBlur={() => handleInlineSave(record, 'amount', editingValue)}
+                placeholder="0.00"
+                prefix="₹"
+                style={{ width: 120 }}
+                autoFocus
+              />
+              <Switch
+                size="small"
+                checked={record.is_credit}
+                onChange={(checked) => handleInlineSave(record, 'is_credit', checked)}
+                checkedChildren="Credit"
+                unCheckedChildren="Debit"
+              />
+            </Space>
           );
         }
+
         return (
-          <AmountText isCredit={record.is_credit}>
-            ₹{Math.abs(amount).toFixed(2)}
-          </AmountText>
+          <Space direction="horizontal" size="small">
+            <AmountText
+              isCredit={record.is_credit}
+              style={{ cursor: 'pointer' }}
+              onClick={() => startInlineEdit(record, 'amount', Math.abs(amount))}
+            >
+              ₹{Math.abs(amount).toFixed(2)}
+            </AmountText>
+            <Switch
+              size="small"
+              checked={record.is_credit}
+              onChange={(checked) => handleInlineSave(record, 'is_credit', checked)}
+              checkedChildren="Credit"
+              unCheckedChildren="Debit"
+            />
+          </Space>
         );
       },
       width: 220,
@@ -473,37 +586,7 @@ const TransactionTable = ({
       },
       sortDirections: ["ascend", "descend"],
     },
-    {
-      title: "Actions",
-      key: "actions",
-      width: 120,
-      fixed: "right",
-      render: (_, record) => (
-        <Space>
-          {editingTransaction && editingTransaction.id === record.id ? (
-            <>
-              <Button
-                type="primary"
-                icon={<CheckCircleOutlined />}
-                onClick={() => form.submit()}
-              />
-              <Button
-                icon={<CloseCircleOutlined />}
-                onClick={() => {
-                  onCancelEdit();
-                  form.resetFields();
-                }}
-              />
-            </>
-          ) : (
-            <Button
-              icon={<EditOutlined />}
-              onClick={() => handleEdit(record)}
-            />
-          )}
-        </Space>
-      ),
-    },
+    // Removed Actions column since we now have inline editing
   ];
 
   return (

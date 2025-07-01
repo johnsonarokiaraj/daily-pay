@@ -170,7 +170,7 @@ const TagsApp = () => {
       key: "amount",
       render: (amount) => (
         <Text strong style={{ color: "#c85ea2" }}>
-          ₹{(amount || 0).toFixed(2)}
+          ₹{parseFloat(amount || 0).toFixed(2)}
         </Text>
       ),
       sorter: (a, b) => (a.total_amount || 0) - (b.total_amount || 0),
