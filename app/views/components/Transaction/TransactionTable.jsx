@@ -110,7 +110,7 @@ const TransactionTable = ({
       // Only call backend if there was actually a change
       if (hasChanged) {
         await onUpdate(updateData);
-        message.success('Transaction updated successfully');
+        // message.success('Transaction updated successfully'); // Remove this line to prevent double notification
       }
     } catch (error) {
       message.error('Failed to update transaction');
