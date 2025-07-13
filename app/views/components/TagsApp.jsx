@@ -48,9 +48,14 @@ const TagsApp = () => {
     setLoading(true);
     try {
       const response = await axios.get("/api/tags.json");
-      const tagsData = response.data.tags || [];
+      console.log("API response:", response.data);
+      const tagsData = Array.isArray(response.data) ? response.data : (response.data.tags || []);
+      console.log("tagsData:", tagsData);
       setTags(tagsData);
       calculateStats(tagsData);
+      if (tagsData.length > 0) {
+        console.log("First tag rowKey:", tagsData[0].id);
+      }
     } catch (error) {
       message.error("Failed to load tags");
     } finally {

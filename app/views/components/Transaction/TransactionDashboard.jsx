@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import TransactionHeader from "./TransactionHeader";
 import TransactionStats from "./TransactionStats";
 import TransactionForm from "./TransactionForm";
-import TransactionTable from "./TransactionTable";
+import TransactionList from "./TransactionList"; // Changed from TransactionTable to TransactionList
 import FilterDrawer from "./FilterDrawer";
 import SaveViewModal from "./SaveViewModal";
 
@@ -78,7 +78,7 @@ const TransactionDashboard = () => {
         tags={tags}
       />
 
-      <TransactionTable
+      <TransactionList
         transactions={transactions}
         loading={loading}
         editingTransaction={editingTransaction}

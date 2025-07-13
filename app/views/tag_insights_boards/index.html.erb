@@ -1,42 +1,559 @@
-<div style="max-width: 900px; margin: 32px auto; padding: 32px; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5em;">
-    <h1 style="font-size: 2rem; color: #1677ff; font-weight: 700; letter-spacing: 1px; margin: 0;">Tag Insights Boards</h1>
-    <%= link_to 'New Board', new_tag_insights_board_path, style: 'color: #fff; background: #1677ff; padding: 8px 20px; border-radius: 4px; font-weight: 500; text-decoration: none; font-size: 1rem;' %>
+<div class="tag-insights-container">
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="page-title">
+          <i class="fas fa-chart-bar"></i>
+          Tag Insights Boards
+        </h1>
+        <p class="page-subtitle">Analyze and visualize your financial data with custom tag-based boards</p>
+      </div>
+      <div class="header-actions">
+        <%= link_to new_tag_insights_board_path, class: 'btn btn-primary' do %>
+          <i class="fas fa-plus"></i>
+          Create New Board
+        <% end %>
+      </div>
+    </div>
   </div>
-  <table style="width: 100%; border-collapse: collapse;">
-    <thead>
-      <tr style="background: #f0f5ff;">
-        <th style="padding: 10px 8px; text-align: left; color: #2b3a55; font-weight: 600;">Name</th>
-        <th style="padding: 10px 8px; text-align: left; color: #2b3a55; font-weight: 600;">Financial Summary</th>
-        <th style="padding: 10px 8px; text-align: left; color: #2b3a55; font-weight: 600;">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @boards_with_financials.each do |board_data| %>
-        <% board = board_data[:board] %>
-        <tr style="border-bottom: 1px solid #f0f0f0;">
-          <td style="padding: 10px 8px; font-weight: 500; color: #1677ff;">
-            <%= link_to board.name, tag_insights_board_path(board), style: 'text-decoration: none; color: #1677ff;' %>
-          </td>
-          <td style="padding: 10px 8px;">
-            <div style="display: flex; gap: 8px; align-items: center;">
-              <span style="background: #f6ffed; color: #52c41a; border-radius: 4px; padding: 2px 8px; font-weight: 600; border: 1px solid #b7eb8f;">
-                Credit: ₹<%= board_data[:credit_sum] %>
+
+  <!-- Boards Grid -->
+  <div class="boards-grid">
+    <% @boards_with_financials.each do |board_data| %>
+      <% board = board_data[:board] %>
+      <div class="board-card">
+        <div class="card-header">
+          <div class="board-info">
+            <h3 class="board-title">
+              <%= link_to board.name, tag_insights_board_path(board), class: 'board-link' %>
+            </h3>
+            <div class="board-meta">
+              <span class="main-tag">
+                <i class="fas fa-tag"></i>
+                <%= board.main_tag %>
               </span>
-              <span style="background: #fff2f0; color: #ff4d4f; border-radius: 4px; padding: 2px 8px; font-weight: 600; border: 1px solid #ffccc7;">
-                Debit: ₹<%= board_data[:debit_sum] %>
-              </span>
-              <span style="background: #f0f5ff; color: #1677ff; border-radius: 4px; padding: 2px 8px; font-weight: 600; border: 1px solid #adc6ff;">
-                Balance: ₹<%= board_data[:balance] %>
-              </span>
+              <% if board.sub_tags&.any? %>
+                <span class="sub-tags-count">
+                  <i class="fas fa-tags"></i>
+                  <%= board.sub_tags.size %> sub-tags
+                </span>
+              <% end %>
             </div>
-          </td>
-          <td style="padding: 10px 8px;">
-            <%= link_to 'View', tag_insights_board_path(board), style: 'color: #1677ff; font-weight: 500; margin-right: 10px; text-decoration: none;' %>
-            <%= link_to 'Edit', edit_tag_insights_board_path(board), style: 'color: #fff; background: #1677ff; padding: 4px 14px; border-radius: 4px; font-weight: 500; text-decoration: none;' %>
-          </td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
+          </div>
+          <div class="card-actions">
+            <div class="dropdown">
+              <button class="btn-icon dropdown-toggle" data-toggle="dropdown">
+                <i class="fas fa-ellipsis-v"></i>
+              </button>
+              <div class="dropdown-menu">
+                <%= link_to tag_insights_board_path(board), class: 'dropdown-item' do %>
+                  <i class="fas fa-eye"></i> View Details
+                <% end %>
+                <%= link_to edit_tag_insights_board_path(board), class: 'dropdown-item' do %>
+                  <i class="fas fa-edit"></i> Edit Board
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="financial-summary">
+          <div class="summary-item credit">
+            <div class="summary-icon">
+              <i class="fas fa-arrow-up"></i>
+            </div>
+            <div class="summary-details">
+              <span class="summary-label">Total Credit</span>
+              <span class="summary-amount">₹<%= number_with_delimiter(board_data[:credit_sum]) %></span>
+            </div>
+          </div>
+
+          <div class="summary-item debit">
+            <div class="summary-icon">
+              <i class="fas fa-arrow-down"></i>
+            </div>
+            <div class="summary-details">
+              <span class="summary-label">Total Debit</span>
+              <span class="summary-amount">₹<%= number_with_delimiter(board_data[:debit_sum]) %></span>
+            </div>
+          </div>
+
+          <div class="summary-item balance <%= board_data[:balance] >= 0 ? 'positive' : 'negative' %>">
+            <div class="summary-icon">
+              <i class="fas fa-<%= board_data[:balance] >= 0 ? 'plus' : 'minus' %>"></i>
+            </div>
+            <div class="summary-details">
+              <span class="summary-label">Net Balance</span>
+              <span class="summary-amount">₹<%= number_with_delimiter(board_data[:balance]) %></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div class="board-stats">
+            <span class="stat-item">
+              <i class="fas fa-calendar"></i>
+              Created <%= time_ago_in_words(board.created_at) %> ago
+            </span>
+          </div>
+          <div class="quick-actions">
+            <%= link_to tag_insights_board_path(board), class: 'btn btn-outline btn-sm' do %>
+              <i class="fas fa-chart-line"></i>
+              Analyze
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @boards_with_financials.empty? %>
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i class="fas fa-chart-bar"></i>
+        </div>
+        <h3 class="empty-title">No boards created yet</h3>
+        <p class="empty-description">Create your first tag insights board to start analyzing your financial data</p>
+        <%= link_to new_tag_insights_board_path, class: 'btn btn-primary' do %>
+          <i class="fas fa-plus"></i>
+          Create Your First Board
+        <% end %>
+      </div>
+    <% end %>
+  </div>
 </div>
+
+<style>
+/* Container and Layout */
+.tag-insights-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  min-height: calc(100vh - 100px);
+}
+
+/* Header Styles */
+.page-header {
+  background: linear-gradient(135deg, #1677ff 0%, #0056d3 100%);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 32px;
+  box-shadow: 0 8px 32px rgba(22, 119, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.page-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(50%, -50%);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.title-section {
+  color: white;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-title i {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.page-subtitle {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+  color: #1677ff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  color: #0056d3;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid #e2e8f0;
+  color: #64748b;
+}
+
+.btn-outline:hover {
+  border-color: #1677ff;
+  color: #1677ff;
+  background: rgba(22, 119, 255, 0.05);
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: #f8fafc;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+/* Boards Grid */
+.boards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+/* Board Card Styles */
+.board-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.board-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+  border-color: #cbd5e1;
+}
+
+.card-header {
+  padding: 24px 24px 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.board-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.board-link {
+  color: #1e293b;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.board-link:hover {
+  color: #1677ff;
+}
+
+.board-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.main-tag, .sub-tags-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.main-tag i, .sub-tags-count i {
+  font-size: 10px;
+}
+
+/* Financial Summary */
+.financial-summary {
+  padding: 0 24px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.summary-item.credit {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+}
+
+.summary-item.debit {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fecaca;
+}
+
+.summary-item.balance.positive {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid #bbf7d0;
+}
+
+.summary-item.balance.negative {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fecaca;
+}
+
+.summary-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.credit .summary-icon {
+  background: #0ea5e9;
+  color: white;
+}
+
+.debit .summary-icon {
+  background: #ef4444;
+  color: white;
+}
+
+.balance.positive .summary-icon {
+  background: #10b981;
+  color: white;
+}
+
+.balance.negative .summary-icon {
+  background: #ef4444;
+  color: white;
+}
+
+.summary-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-amount {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Card Footer */
+.card-footer {
+  padding: 16px 24px 24px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #f1f5f9;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.stat-item i {
+  font-size: 10px;
+}
+
+/* Dropdown */
+.dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border: 1px solid #e2e8f0;
+  min-width: 160px;
+  z-index: 1000;
+  display: none;
+}
+
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  text-decoration: none;
+  color: #475569;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background: #f8fafc;
+  color: #1677ff;
+}
+
+.dropdown-item i {
+  font-size: 12px;
+  width: 16px;
+}
+
+/* Empty State */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 64px 32px;
+  background: white;
+  border-radius: 16px;
+  border: 2px dashed #e2e8f0;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  color: #94a3b8;
+  font-size: 32px;
+}
+
+.empty-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.empty-description {
+  color: #64748b;
+  margin: 0 0 24px 0;
+  font-size: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .tag-insights-container {
+    padding: 16px;
+  }
+
+  .header-content {
+    flex-direction: column;
+    gap: 24px;
+    text-align: center;
+  }
+
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .boards-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .card-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .card-footer {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .financial-summary {
+    gap: 8px;
+  }
+
+  .summary-item {
+    padding: 8px;
+  }
+
+  .board-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+</style>

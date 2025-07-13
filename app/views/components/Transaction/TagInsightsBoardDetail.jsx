@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Card, Typography, Tag, Spin, Button, message, Collapse, Dropdown, Menu, Space } from "antd";
+import { Card, Typography, Tag, Spin, Button, message, Collapse, Dropdown, Menu, Space, Form } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
 import { Bar } from 'react-chartjs-2';
-import { BarChartOutlined, PieChartOutlined, DownOutlined, AreaChartOutlined } from '@ant-design/icons';
+import { BarChartOutlined, PieChartOutlined, DownOutlined, AreaChartOutlined, EditOutlined } from '@ant-design/icons';
 import { FaChartBar } from 'react-icons/fa';
 import ChartJSPie from '../ChartJSPie';
+import TransactionEditModal from './TransactionEditModal';
+import TagInsightsBoardEditModal from './TagInsightsBoardEditModal';
 import { formatIndianCurrency } from '../../../javascript/utils/indianCurrency';
+import axios from 'axios';
+import dayjs from 'dayjs';
 
 const { Title } = Typography;
 
@@ -20,6 +24,16 @@ export default function TagInsightsBoardDetail() {
   const [loading, setLoading] = useState(true);
   const [mainTagChart, setMainTagChart] = useState(null);
   const [subTagCharts, setSubTagCharts] = useState({});
+
+  // Edit functionality state
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState(null);
+  const [tags, setTags] = useState([]);
+  const [editForm] = Form.useForm();
+
+  // Board edit functionality state
+  const [isBoardEditModalVisible, setIsBoardEditModalVisible] = useState(false);
+  const [boardEditForm] = Form.useForm();
 
   useEffect(() => {
     setLoading(true);
@@ -165,6 +179,112 @@ export default function TagInsightsBoardDetail() {
         console.log(`Chart data for ${tag}:`, chartData);
       }, 100);
     }
+  };
+
+  // Edit functionality
+  const handleEditTransaction = (transaction) => {
+    console.log('Editing transaction:', transaction);
+    setEditingTransaction(transaction);
+    setIsEditModalVisible(true);
+
+    // Pre-populate the edit form
+    editForm.setFieldsValue({
+      id: transaction.id,
+      name: transaction.name,
+      amount: Math.abs(parseFloat(transaction.amount)),
+      transaction_date: dayjs(transaction.date),
+      tag_list: transaction.tags || [],
+      is_credit: parseFloat(transaction.amount) >= 0,
+    });
+  };
+
+  const handleEditModalSubmit = async (values) => {
+    try {
+      const payload = {
+        transaction: {
+          ...values,
+          transaction_date: values.transaction_date.format("DD-MM-YYYY"),
+          tag_list: values.tag_list || [],
+        },
+      };
+
+      await axios.patch(`/api/transactions/${editingTransaction.id}`, payload);
+      message.success("Transaction updated successfully");
+
+      setIsEditModalVisible(false);
+      setEditingTransaction(null);
+      editForm.resetFields();
+
+      // Refresh the board data
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+      message.error("Failed to update transaction");
+    }
+  };
+
+  const handleEditModalCancel = () => {
+    setIsEditModalVisible(false);
+    setEditingTransaction(null);
+    editForm.resetFields();
+  };
+
+  // Fetch tags for the edit modal
+  useEffect(() => {
+    fetch('/api/tags')
+      .then(res => res.json())
+      .then(data => {
+        if (data.tags) {
+          setTags(data.tags.map(tag => tag.name));
+        }
+      })
+      .catch(err => console.error('Error fetching tags:', err));
+  }, []);
+
+  // Board edit functionality
+  const handleEditBoard = () => {
+    setIsBoardEditModalVisible(true);
+    // Pre-populate the board edit form
+    boardEditForm.setFieldsValue({
+      name: board.name,
+      main_tag: board.main_tag,
+      sub_tags: Array.isArray(board.sub_tags) ? board.sub_tags : [],
+    });
+  };
+
+  const handleBoardEditModalSubmit = async (values) => {
+    try {
+      const payload = {
+        tag_insights_board: {
+          ...values,
+          sub_tags: values.sub_tags || [],
+        },
+      };
+
+      console.log('Sending payload:', payload); // Debug log
+      await axios.patch(`/api/tag_insights_boards/${id}`, payload);
+      message.success("Board updated successfully");
+
+      setIsBoardEditModalVisible(false);
+      boardEditForm.resetFields();
+
+      // Refresh the board data
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating board:', error);
+      console.error('Response data:', error.response && error.response.data); // Debug log
+
+      // Show specific error message if available
+      const errorMessage = error.response && error.response.data && error.response.data.errors
+        ? error.response.data.errors.join(', ')
+        : "Failed to update board";
+      message.error(errorMessage);
+    }
+  };
+
+  const handleBoardEditModalCancel = () => {
+    setIsBoardEditModalVisible(false);
+    boardEditForm.resetFields();
   };
 
   if (loading) return <Spin style={{ margin: 48 }} />;
@@ -430,6 +550,14 @@ export default function TagInsightsBoardDetail() {
                       <Tag key={tag} color="purple" style={{ marginRight: 4 }}>{tag}</Tag>
                     ))}
                   </span>
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<EditOutlined />}
+                    onClick={() => handleEditTransaction(row)}
+                    title="Edit Transaction"
+                    style={{ color: '#1677ff' }}
+                  />
                 </Card>
               ))}
               
@@ -539,15 +667,34 @@ export default function TagInsightsBoardDetail() {
       <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.07)', borderRadius: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <Title level={3} style={{ margin: 0, color: '#1677ff', fontWeight: 700 }}>{board.name}</Title>
-          <div>
-            <Tag color="blue" style={{ fontSize: 16, padding: '4px 16px', borderRadius: 6 }}>Main: {board.main_tag}</Tag>
-            {Array.isArray(board.sub_tags) && board.sub_tags.length > 0 && (
-              <span style={{ marginLeft: 8 }}>
-                {board.sub_tags.map(tag => (
-                  <Tag key={tag} color="geekblue" style={{ fontSize: 15, borderRadius: 6 }}>{tag}</Tag>
-                ))}
-              </span>
-            )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div>
+              <Tag color="blue" style={{ fontSize: 16, padding: '4px 16px', borderRadius: 6 }}>Main: {board.main_tag}</Tag>
+              {Array.isArray(board.sub_tags) && board.sub_tags.length > 0 && (
+                <span style={{ marginLeft: 8 }}>
+                  {board.sub_tags.map(tag => (
+                    <Tag key={tag} color="geekblue" style={{ fontSize: 15, borderRadius: 6 }}>{tag}</Tag>
+                  ))}
+                </span>
+              )}
+            </div>
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              onClick={handleEditBoard}
+              size="middle"
+              style={{
+                background: '#1677ff',
+                borderColor: '#1677ff',
+                borderRadius: 6,
+                fontWeight: 500,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4
+              }}
+            >
+              Edit Board
+            </Button>
           </div>
         </div>
         <div style={{ marginBottom: 24, borderBottom: '1px solid #f0f0f0', paddingBottom: 16 }}>
@@ -954,6 +1101,28 @@ export default function TagInsightsBoardDetail() {
           </div>
         )}
       </Card>
+
+      {/* Edit Transaction Modal */}
+      <TransactionEditModal
+        open={isEditModalVisible}
+        onCancel={handleEditModalCancel}
+        onSubmit={handleEditModalSubmit}
+        form={editForm}
+        editingTransaction={editingTransaction}
+        tags={tags}
+        loading={loading}
+      />
+
+      {/* Edit Board Modal */}
+      <TagInsightsBoardEditModal
+        open={isBoardEditModalVisible}
+        onCancel={handleBoardEditModalCancel}
+        onSubmit={handleBoardEditModalSubmit}
+        form={boardEditForm}
+        initialData={board}
+        tags={tags}
+        loading={loading}
+      />
     </div>
   );
 }

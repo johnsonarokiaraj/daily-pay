@@ -11,6 +11,8 @@ import {
   Typography,
   Switch,
   message,
+  Popover,
+  TimePicker,
 } from "antd";
 import {
   CalendarOutlined,
@@ -20,6 +22,8 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   PlusOutlined,
+  BellOutlined,
+  WhatsAppOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import {
@@ -49,6 +53,90 @@ import {
 const { Text } = Typography;
 const { Option } = Select;
 
+// Reminder form component
+const ReminderForm = ({ reminder, onChange, onSave, onCancel }) => {
+  const [date, setDate] = useState((reminder && reminder.date) ? dayjs(reminder.date) : null);
+  const [time, setTime] = useState((reminder && reminder.time) ? dayjs(reminder.time, 'HH:mm') : null);
+  const [phone, setPhone] = useState((reminder && reminder.phone) || "");
+  const [snooze, setSnooze] = useState((reminder && reminder.snooze) || "1_day");
+  const [whatsapp, setWhatsapp] = useState(!(reminder && reminder.whatsapp === false));
+
+  const handleSave = () => {
+    onSave({
+      date: date ? date.format('YYYY-MM-DD') : null,
+      time: time ? time.format('HH:mm') : null,
+      phone,
+      snooze,
+      whatsapp,
+    });
+  };
+
+  return (
+    <div style={{ minWidth: 250 }}>
+      <div style={{ marginBottom: 8 }}>
+        <DatePicker value={date} onChange={setDate} style={{ width: '100%' }} />
+      </div>
+      <div style={{ marginBottom: 8 }}>
+        <TimePicker value={time} onChange={setTime} format="HH:mm" style={{ width: '100%' }} />
+      </div>
+      <div style={{ marginBottom: 8 }}>
+        <Input
+          placeholder="Phone Number"
+          value={phone}
+          onChange={e => setPhone(e.target.value)}
+          style={{ width: '100%' }}
+        />
+      </div>
+      <div style={{ marginBottom: 8 }}>
+        <Select value={snooze} onChange={setSnooze} style={{ width: '100%' }}>
+          <Option value="1_day">Snooze: 1 Day</Option>
+          <Option value="1_week">Snooze: 1 Week</Option>
+        </Select>
+      </div>
+      <div style={{ marginBottom: 8 }}>
+        <label>
+          <WhatsAppOutlined style={{ color: '#25D366', marginRight: 4 }} />
+          <input type="checkbox" checked={whatsapp} onChange={e => setWhatsapp(e.target.checked)} />
+          &nbsp;Send via WhatsApp
+        </label>
+      </div>
+      <div style={{ textAlign: 'right' }}>
+        <Button size="small" onClick={onCancel} style={{ marginRight: 8 }}>Cancel</Button>
+        <Button size="small" type="primary" onClick={handleSave}>Save</Button>
+      </div>
+    </div>
+  );
+};
+
+// Reminder cell component to avoid using hooks in render
+const ReminderCell = ({reminder, record, onUpdate}) => {
+  const [visible, setVisible] = useState(false);
+  const handleSave = (reminderData) => {
+    setVisible(false);
+    onUpdate({ ...record, reminder: reminderData, id: record.id });
+  };
+  return (
+    <Popover
+      content={
+        <ReminderForm
+          reminder={reminder}
+          onChange={() => {}}
+          onSave={handleSave}
+          onCancel={() => setVisible(false)}
+        />
+      }
+      title="Set Reminder"
+      trigger="click"
+      open={visible}
+      onOpenChange={setVisible}
+    >
+      <Button size="small" icon={<BellOutlined />}>
+        {reminder && reminder.date ? "Edit" : "Set"}
+      </Button>
+    </Popover>
+  );
+};
+
 const TransactionTable = ({
   transactions,
   loading,
@@ -73,16 +161,33 @@ const TransactionTable = ({
 
   // Save inline edit
   const handleInlineSave = async (record, field, value) => {
+    console.log('=== handleInlineSave called ===');
+    console.log('record:', record);
+    console.log('field:', field);
+    console.log('value:', value);
+    console.log('originalValue:', originalValue);
+
     try {
       // Check if value actually changed
       let hasChanged = false;
       let updateData = { ...record, id: record.id };
 
       if (field === 'transaction_date') {
-        const newDateString = value.format('DD-MM-YYYY');
-        hasChanged = newDateString !== originalValue;
+        console.log('Processing transaction_date field');
+
+        // Parse both dates to compare them properly regardless of format
+        const originalDate = parseTransactionDate(originalValue);
+        const newDate = value;
+
+        console.log('originalDate parsed:', originalDate.format('YYYY-MM-DD'));
+        console.log('newDate:', newDate.format('YYYY-MM-DD'));
+
+        hasChanged = !originalDate.isSame(newDate, 'day');
+        console.log('hasChanged:', hasChanged);
+
         if (hasChanged) {
-          updateData.transaction_date = newDateString;
+          updateData.transaction_date = value; // Send the dayjs object, let the hook handle formatting
+          console.log('Setting updateData.transaction_date to:', value);
         }
       } else if (field === 'amount') {
         const newAmount = parseFloat(value) || 0;
@@ -109,10 +214,15 @@ const TransactionTable = ({
 
       // Only call backend if there was actually a change
       if (hasChanged) {
-        await onUpdate(updateData);
-        // message.success('Transaction updated successfully'); // Remove this line to prevent double notification
+        console.log('Changes detected, calling onUpdate with:', updateData);
+        const result = await onUpdate(updateData);
+        console.log('onUpdate result:', result);
+      } else {
+        console.log('No changes detected, skipping update');
       }
     } catch (error) {
+      console.error('Error in handleInlineSave:', error);
+      console.error('Error stack:', error.stack);
       message.error('Failed to update transaction');
     }
   };
@@ -349,10 +459,52 @@ const TransactionTable = ({
               ref={inputRef}
               size="small"
               format="DD-MM-YYYY"
-              value={editingValue}
-              onChange={setEditingValue}
-              onPressEnter={() => handleInlineSave(record, 'transaction_date', editingValue)}
-              onBlur={() => handleInlineSave(record, 'transaction_date', editingValue)}
+              value={editingValue ? dayjs(editingValue) : null}
+              onChange={val => {
+                // Only update the editing value, don't save immediately
+                if (val) {
+                  setEditingValue(val.format("YYYY-MM-DD"));
+                } else {
+                  setEditingValue("");
+                }
+              }}
+              onBlur={() => {
+                if (editingValue) {
+                  const newDate = dayjs(editingValue, "YYYY-MM-DD");
+                  const originalDate = parseTransactionDate(record.transaction_date);
+
+                  console.log('DatePicker onBlur - comparing dates:');
+                  console.log('newDate:', newDate.format("YYYY-MM-DD"));
+                  console.log('originalDate:', originalDate.format("YYYY-MM-DD"));
+                  console.log('are they the same?', newDate.isSame(originalDate, 'day'));
+
+                  if (newDate.isValid() && originalDate.isValid() && !newDate.isSame(originalDate, 'day')) {
+                    console.log('Dates are different, saving...');
+                    handleInlineSave(record, 'transaction_date', newDate);
+                  } else {
+                    console.log('Dates are the same or invalid, canceling...');
+                    handleInlineCancel();
+                  }
+                } else {
+                  console.log('No editing value, canceling...');
+                  handleInlineCancel();
+                }
+              }}
+              onPressEnter={() => {
+                // Handle Enter key press
+                if (editingValue) {
+                  const newDate = dayjs(editingValue, "YYYY-MM-DD");
+                  const originalDate = parseTransactionDate(record.transaction_date);
+
+                  if (newDate.isValid() && originalDate.isValid() && !newDate.isSame(originalDate, 'day')) {
+                    handleInlineSave(record, 'transaction_date', newDate);
+                  } else {
+                    handleInlineCancel();
+                  }
+                } else {
+                  handleInlineCancel();
+                }
+              }}
               autoFocus
             />
           );
@@ -586,7 +738,15 @@ const TransactionTable = ({
       },
       sortDirections: ["ascend", "descend"],
     },
-    // Removed Actions column since we now have inline editing
+    {
+      title: <><BellOutlined /> Reminder</>,
+      key: "reminder",
+      dataIndex: "reminder",
+      render: (reminder, record) => (
+        <ReminderCell reminder={reminder} record={record} onUpdate={onUpdate} />
+      ),
+      width: 120,
+    },
   ];
 
   return (

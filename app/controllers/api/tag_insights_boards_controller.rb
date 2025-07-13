@@ -1,5 +1,7 @@
 module Api
   class TagInsightsBoardsController < ApplicationController
+    skip_before_action :verify_authenticity_token
+
     def index
       boards = TagInsightsBoardRecord.all
       render json: boards
@@ -21,11 +23,25 @@ module Api
       end
     end
 
+    def update
+      board = TagInsightsBoardRecord.find(params[:id])
+
+      # Debug logging to see what parameters we're receiving
+      Rails.logger.debug "Received params: #{params.inspect}"
+      Rails.logger.debug "Board params: #{board_params.inspect}"
+
+      if board.update(board_params)
+        render json: board
+      else
+        Rails.logger.error "Board update errors: #{board.errors.full_messages}"
+        render json: { errors: board.errors.full_messages }, status: :unprocessable_entity
+      end
+    end
+
     private
 
     def board_params
-      params.require(:tag_insights_board_record).permit(:main_tag, sub_tags: [])
+      params.require(:tag_insights_board).permit(:name, :main_tag, sub_tags: [])
     end
   end
 end
-

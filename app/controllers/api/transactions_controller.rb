@@ -1,23 +1,14 @@
 class Api::TransactionsController < ApplicationController
   skip_before_action :verify_authenticity_token
+  before_action :set_date_range, only: [:index]
 
   def index
-    # Only set date defaults if no allow_date flag is passed or if dates are explicitly provided
-    @apply_date_filter = true
-    @start_date = Date.current.beginning_of_month
-    @end_date = Date.current.end_of_month
-    if params[:allow_date] == "1" || params[:start_date].present? || params[:end_date].present?
-      @start_date = params[:start_date]
-      @end_date = params[:end_date]
-    end
-    
-    @transactions = get_transactions
-    @credit = @transactions.where(is_credit: true).map{|t| t.amount}.sum
-    @debit = @transactions.where(is_credit: false).map{|t| t.amount}.sum
-    @tag_list = params[:tag_list]
+    @apply_date_filter = params[:start_date].present? || params[:end_date].present?
+    @transactions = get_transactions.limit(params[:limit] || 50).offset(params[:offset] || 0)
+    @credit = @transactions.where(is_credit: true).sum(:amount)
+    @debit = @transactions.where(is_credit: false).sum(:amount)
 
     respond_to do |format|
-      format.html
       format.json do
         render json: {
           transactions: @transactions.map do |t|
@@ -28,7 +19,8 @@ class Api::TransactionsController < ApplicationController
               transaction_date: t.transaction_date,
               is_credit: t.is_credit?,
               tag_list: t.tag_list,
-              formatted_amount: t.formatted_amount
+              formatted_amount: t.formatted_amount,
+              reminder: t.reminder
             }
           end,
           credit: @credit,
@@ -42,7 +34,7 @@ class Api::TransactionsController < ApplicationController
 
   def create
     @transaction = Transaction.new(update_params)
-    
+
     respond_to do |format|
       if @transaction.save
         format.html { redirect_to transactions_path, notice: "Transaction added successfully." }
@@ -61,7 +53,7 @@ class Api::TransactionsController < ApplicationController
 
   def update
     @transaction = Transaction.find(params[:id])
-    
+
     respond_to do |format|
       if @transaction.update(update_params)
         format.js   # Will render update.js.erb
@@ -76,7 +68,7 @@ class Api::TransactionsController < ApplicationController
 
   def destroy
     @transaction = Transaction.find(params[:id])
-    
+
     respond_to do |format|
       if @transaction.destroy
         format.html { redirect_to transactions_path, notice: "Transaction deleted." }
@@ -113,9 +105,13 @@ class Api::TransactionsController < ApplicationController
     render json: { credit: credit, debit: debit }
   end
 
-
   private
-  
+
+  def set_date_range
+    @start_date = params[:start_date].present? ? Date.strptime(params[:start_date], '%d-%m-%Y') : Date.current.beginning_of_month
+    @end_date = params[:end_date].present? ? Date.strptime(params[:end_date], '%d-%m-%Y') : Date.current.end_of_month
+  end
+
   def transaction_json(transaction)
     {
       id: transaction.id,
@@ -124,23 +120,24 @@ class Api::TransactionsController < ApplicationController
       transaction_date: transaction.transaction_date,
       is_credit: transaction.is_credit?,
       tag_list: transaction.tag_list,
-      formatted_amount: transaction.formatted_amount
+      formatted_amount: transaction.formatted_amount,
+      reminder: transaction.reminder
     }
   end
 
   def get_transactions
     transactions = Transaction.all
-    
+
     # Apply tag filter if present
     if params[:tag_list].present?
-      transactions = Transaction.tagged_with(params[:tag_list])
+      transactions = transactions.tagged_with(params[:tag_list])
     end
-    
+
     # Only apply date filter if explicitly requested or dates are provided
     if @apply_date_filter
       transactions = transactions.where(transaction_date: @start_date..@end_date)
     end
-    
+
     transactions.order(transaction_date: :desc, created_at: :desc)
   end
 
@@ -149,7 +146,15 @@ class Api::TransactionsController < ApplicationController
   end
 
   def update_params
-    params.require(:transaction).permit(:name, :amount, :transaction_date, :tag_list, :is_credit)
+    # Handle both nested transaction data and direct data from frontend
+    if params[:transaction].present?
+      # Filter out computed/read-only fields like id and formatted_amount
+      permitted_params = params.require(:transaction).permit(:name, :amount, :transaction_date, :is_credit, tag_list: [], reminder: {})
+      # Remove id and formatted_amount if they exist in the nested params
+      permitted_params.except(:id, :formatted_amount)
+    else
+      params.permit(:name, :amount, :transaction_date, :is_credit, tag_list: [], reminder: {}).except(:id, :formatted_amount)
+    end
   end
 
   def permitted_params

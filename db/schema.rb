@@ -10,12 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_06_26_153535) do
+ActiveRecord::Schema[7.1].define(version: 2025_07_09_120003) do
   create_table "auto_tag_rules", force: :cascade do |t|
     t.text "required_tags"
     t.text "auto_tags"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "comments", force: :cascade do |t|
+    t.integer "task_id", null: false
+    t.text "content"
+    t.string "author"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["task_id"], name: "index_comments_on_task_id"
   end
 
   create_table "tag_insights_board_records", force: :cascade do |t|
@@ -25,6 +34,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_26_153535) do
     t.integer "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "position"
   end
 
   create_table "taggings", force: :cascade do |t|
@@ -70,6 +80,34 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_26_153535) do
     t.index ["view_id"], name: "index_targets_on_view_id"
   end
 
+  create_table "task_sections", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "abbreviation", limit: 10, null: false
+    t.text "description"
+    t.integer "position", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["abbreviation"], name: "index_task_sections_on_abbreviation", unique: true
+    t.index ["position"], name: "index_task_sections_on_position"
+  end
+
+  create_table "tasks", force: :cascade do |t|
+    t.integer "task_section_id", null: false
+    t.string "task_id", null: false
+    t.string "name", null: false
+    t.text "description"
+    t.string "status", default: "pending"
+    t.date "completion_date"
+    t.integer "position", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["completion_date"], name: "index_tasks_on_completion_date"
+    t.index ["status"], name: "index_tasks_on_status"
+    t.index ["task_id"], name: "index_tasks_on_task_id", unique: true
+    t.index ["task_section_id", "position"], name: "index_tasks_on_task_section_id_and_position"
+    t.index ["task_section_id"], name: "index_tasks_on_task_section_id"
+  end
+
   create_table "transactions", force: :cascade do |t|
     t.string "name", limit: 191, null: false
     t.decimal "amount", precision: 15, scale: 2, null: false
@@ -77,6 +115,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_26_153535) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "is_credit", default: false, null: false
+    t.json "reminder", default: {}
   end
 
   create_table "views", force: :cascade do |t|
@@ -88,6 +127,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_26_153535) do
     t.index ["user_id"], name: "index_views_on_user_id"
   end
 
+  add_foreign_key "comments", "tasks"
   add_foreign_key "taggings", "tags"
   add_foreign_key "targets", "views"
+  add_foreign_key "tasks", "task_sections"
 end

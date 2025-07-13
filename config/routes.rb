@@ -31,7 +31,12 @@ Rails.application.routes.draw do
         get :progress
       end
     end
-    resources :tag_insights_boards, only: [:index, :create, :show]
+    resources :tag_insights_boards, only: [:index, :create, :show, :update]
+    resources :task_sections, defaults: { format: :json } do
+      resources :tasks, defaults: { format: :json } do
+        resources :comments, defaults: { format: :json }
+      end
+    end
   end
 
   resources :tag_insights_boards, only: [:index, :new, :create, :show, :edit, :update]

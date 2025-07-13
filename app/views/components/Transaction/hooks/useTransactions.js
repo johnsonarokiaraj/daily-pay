@@ -84,10 +84,7 @@ export const useTransactions = () => {
       const data = {
         ...values,
         transaction_date: values.transaction_date.format("DD-MM-YYYY"),
-        tag_list:
-          values.tag_list && values.tag_list.join
-            ? values.tag_list.join(",")
-            : "",
+        tag_list: values.tag_list || [], // Send as array, not string
         is_credit: values.is_credit || false,
       };
 
@@ -107,12 +104,19 @@ export const useTransactions = () => {
   };
 
   const handleUpdateTransaction = async (values) => {
+    console.log('=== handleUpdateTransaction called ===');
+    console.log('Input values:', values);
+
     try {
       const transactionId = values.id || (editingTransaction && editingTransaction.id);
+      console.log('Transaction ID:', transactionId);
+
       if (!transactionId) {
+        console.error('No transaction ID provided');
         message.error("No transaction ID provided");
         return false;
       }
+
       const data = {
         ...values,
         transaction_date: values.transaction_date && values.transaction_date.format
@@ -125,18 +129,30 @@ export const useTransactions = () => {
         is_credit: values.is_credit || false,
       };
 
-      await axios.patch(`/api/transactions/${transactionId}`, {
+      console.log('Processed data before API call:', data);
+
+      const apiPayload = {
         transaction: {
           ...data,
-          tag_list: Array.isArray(data.tag_list) ? data.tag_list.join(",") : data.tag_list
+          tag_list: data.tag_list // Send as array, not string
         },
-      });
+      };
+
+      console.log('API payload:', apiPayload);
+      console.log('Making PATCH request to:', `/api/transactions/${transactionId}`);
+
+      await axios.patch(`/api/transactions/${transactionId}`, apiPayload);
+
+      console.log('API call successful');
       message.success("Transaction updated successfully");
 
       setEditingTransaction(null);
       fetchTransactions(currentFilters);
       return true;
     } catch (error) {
+      console.error('Error in handleUpdateTransaction:', error);
+      console.error('Error response:', error.response);
+      console.error('Error message:', error.message);
       message.error("Failed to update transaction");
       return false;
     }
