@@ -1,7 +1,6 @@
 import React, { useState, useRef } from "react";
 import {
-  List,
-  Card,
+  Table,
   Form,
   Input,
   DatePicker,
@@ -14,10 +13,7 @@ import {
   message,
   Popover,
   TimePicker,
-  Avatar,
-  Divider,
-  Row,
-  Col,
+  Modal,
 } from "antd";
 import {
   CalendarOutlined,
@@ -62,16 +58,24 @@ const { Option } = Select;
 
 // Reminder form component (reused from table)
 const ReminderForm = ({ reminder, onChange, onSave, onCancel }) => {
-  const [date, setDate] = useState((reminder && reminder.date) ? dayjs(reminder.date) : null);
-  const [time, setTime] = useState((reminder && reminder.time) ? dayjs(reminder.time, 'HH:mm') : null);
+  const [date, setDate] = useState(
+    reminder && reminder.date ? dayjs(reminder.date) : null,
+  );
+  const [time, setTime] = useState(
+    reminder && reminder.time ? dayjs(reminder.time, "HH:mm") : null,
+  );
   const [phone, setPhone] = useState((reminder && reminder.phone) || "");
-  const [snooze, setSnooze] = useState((reminder && reminder.snooze) || "1_day");
-  const [whatsapp, setWhatsapp] = useState(!(reminder && reminder.whatsapp === false));
+  const [snooze, setSnooze] = useState(
+    (reminder && reminder.snooze) || "1_day",
+  );
+  const [whatsapp, setWhatsapp] = useState(
+    !(reminder && reminder.whatsapp === false),
+  );
 
   const handleSave = () => {
     onSave({
-      date: date ? date.format('YYYY-MM-DD') : null,
-      time: time ? time.format('HH:mm') : null,
+      date: date ? date.format("YYYY-MM-DD") : null,
+      time: time ? time.format("HH:mm") : null,
       phone,
       snooze,
       whatsapp,
@@ -81,35 +85,48 @@ const ReminderForm = ({ reminder, onChange, onSave, onCancel }) => {
   return (
     <div style={{ minWidth: 250 }}>
       <div style={{ marginBottom: 8 }}>
-        <DatePicker value={date} onChange={setDate} style={{ width: '100%' }} />
+        <DatePicker value={date} onChange={setDate} style={{ width: "100%" }} />
       </div>
       <div style={{ marginBottom: 8 }}>
-        <TimePicker value={time} onChange={setTime} format="HH:mm" style={{ width: '100%' }} />
+        <TimePicker
+          value={time}
+          onChange={setTime}
+          format="HH:mm"
+          style={{ width: "100%" }}
+        />
       </div>
       <div style={{ marginBottom: 8 }}>
         <Input
           placeholder="Phone Number"
           value={phone}
-          onChange={e => setPhone(e.target.value)}
-          style={{ width: '100%' }}
+          onChange={(e) => setPhone(e.target.value)}
+          style={{ width: "100%" }}
         />
       </div>
       <div style={{ marginBottom: 8 }}>
-        <Select value={snooze} onChange={setSnooze} style={{ width: '100%' }}>
+        <Select value={snooze} onChange={setSnooze} style={{ width: "100%" }}>
           <Option value="1_day">Snooze: 1 Day</Option>
           <Option value="1_week">Snooze: 1 Week</Option>
         </Select>
       </div>
       <div style={{ marginBottom: 8 }}>
         <label>
-          <WhatsAppOutlined style={{ color: '#25D366', marginRight: 4 }} />
-          <input type="checkbox" checked={whatsapp} onChange={e => setWhatsapp(e.target.checked)} />
+          <WhatsAppOutlined style={{ color: "#25D366", marginRight: 4 }} />
+          <input
+            type="checkbox"
+            checked={whatsapp}
+            onChange={(e) => setWhatsapp(e.target.checked)}
+          />
           &nbsp;Send via WhatsApp
         </label>
       </div>
-      <div style={{ textAlign: 'right' }}>
-        <Button size="small" onClick={onCancel} style={{ marginRight: 8 }}>Cancel</Button>
-        <Button size="small" type="primary" onClick={handleSave}>Save</Button>
+      <div style={{ textAlign: "right" }}>
+        <Button size="small" onClick={onCancel} style={{ marginRight: 8 }}>
+          Cancel
+        </Button>
+        <Button size="small" type="primary" onClick={handleSave}>
+          Save
+        </Button>
       </div>
     </div>
   );
@@ -137,7 +154,11 @@ const ReminderCell = ({ reminder, record, onUpdate }) => {
       open={visible}
       onOpenChange={setVisible}
     >
-      <Button size="small" icon={<BellOutlined />} type={reminder && reminder.date ? "primary" : "default"}>
+      <Button
+        size="small"
+        icon={<BellOutlined />}
+        type={reminder && reminder.date ? "primary" : "default"}
+      >
         {reminder && reminder.date ? "Edit" : "Set"}
       </Button>
     </Popover>
@@ -160,91 +181,78 @@ const TransactionList = ({
   onReset,
   form,
 }) => {
-  // State for inline editing
-  const [editingCell, setEditingCell] = useState(null);
-  const [editingValue, setEditingValue] = useState('');
-  const [originalValue, setOriginalValue] = useState('');
-  const inputRef = useRef(null);
-  const [activeTagInputRowId, setActiveTagInputRowId] = useState(null);
-  const tagInputRef = useRef(null);
+  // State for modal editing
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingRecord, setEditingRecord] = useState(null);
+  const [editForm] = Form.useForm();
 
-  // Save inline edit (reused from table)
-  const handleInlineSave = async (record, field, value) => {
+  // State for reminder form visibility within edit modal
+  const [showReminderForm, setShowReminderForm] = useState(false);
+
+  // Handle modal edit
+  const handleEditClick = (record) => {
+    setEditingRecord(record);
+    setEditModalVisible(true);
+    const parsedDate = parseTransactionDate(record.transaction_date);
+    editForm.setFieldsValue({
+      ...record,
+      transaction_date: parsedDate,
+      tag_list: record.tag_list,
+      is_credit: record.is_credit || false,
+    });
+  };
+
+  // Handle modal save
+  const handleModalSave = async () => {
     try {
-      let hasChanged = false;
-      let updateData = { ...record, id: record.id };
+      const values = await editForm.validateFields();
+      const updateData = {
+        ...editingRecord,
+        ...values,
+        transaction_date: values.transaction_date
+          ? values.transaction_date.format("YYYY-MM-DD")
+          : editingRecord.transaction_date,
+        id: editingRecord.id,
+      };
 
-      if (field === 'transaction_date') {
-        const originalDate = parseTransactionDate(originalValue);
-        const newDate = value;
-        hasChanged = !originalDate.isSame(newDate, 'day');
-        if (hasChanged) {
-          updateData.transaction_date = value;
-        }
-      } else if (field === 'amount') {
-        const newAmount = parseFloat(value) || 0;
-        hasChanged = newAmount !== originalValue;
-        if (hasChanged) {
-          updateData.amount = newAmount;
-        }
-      } else if (field === 'is_credit') {
-        hasChanged = value !== originalValue;
-        if (hasChanged) {
-          updateData.is_credit = value;
-        }
-      } else {
-        hasChanged = value !== originalValue;
-        if (hasChanged) {
-          updateData[field] = value;
-        }
-      }
-
-      setEditingCell(null);
-      setEditingValue('');
-      setOriginalValue('');
-
-      if (hasChanged) {
-        await onUpdate(updateData);
-      }
+      await onUpdate(updateData);
+      setEditModalVisible(false);
+      setEditingRecord(null);
+      editForm.resetFields();
     } catch (error) {
-      console.error('Error in handleInlineSave:', error);
-      message.error('Failed to update transaction');
+      console.error("Error saving transaction:", error);
+      message.error("Failed to update transaction");
     }
   };
 
-  // Cancel inline edit
-  const handleInlineCancel = () => {
-    setEditingCell(null);
-    setEditingValue('');
+  // Handle reminder click
+  const handleReminderClick = () => {
+    setShowReminderForm(!showReminderForm);
   };
 
-  // Start inline edit
-  const startInlineEdit = (record, field, currentValue) => {
-    setEditingCell({ recordId: record.id, field });
+  // Handle reminder save
+  const handleReminderSave = (reminderData) => {
+    onUpdate({
+      ...editingRecord,
+      reminder: reminderData,
+      id: editingRecord.id,
+    });
+    setShowReminderForm(false);
+    // Update the editingRecord to reflect the new reminder
+    setEditingRecord({ ...editingRecord, reminder: reminderData });
+  };
 
-    let valueToEdit, originalVal;
-    if (field === 'transaction_date') {
-      valueToEdit = parseTransactionDate(currentValue);
-      originalVal = currentValue;
-    } else if (field === 'amount') {
-      valueToEdit = Math.abs(currentValue);
-      originalVal = Math.abs(currentValue);
-    } else if (field === 'is_credit') {
-      valueToEdit = currentValue;
-      originalVal = currentValue;
-    } else {
-      valueToEdit = currentValue;
-      originalVal = currentValue;
-    }
+  // Handle reminder cancel
+  const handleReminderCancel = () => {
+    setShowReminderForm(false);
+  };
 
-    setEditingValue(valueToEdit);
-    setOriginalValue(originalVal);
-
-    setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-      }
-    }, 100);
+  // Handle modal cancel
+  const handleModalCancel = () => {
+    setEditModalVisible(false);
+    setEditingRecord(null);
+    setShowReminderForm(false);
+    editForm.resetFields();
   };
 
   // Handler to remove a tag from a transaction
@@ -253,330 +261,108 @@ const TransactionList = ({
     onUpdate({ ...record, tag_list: newTags, id: record.id });
   };
 
-  // Handler to add a tag to a transaction
-  const handleAddTag = (record, newTag) => {
-    if (!newTag || record.tag_list.includes(newTag)) return;
-    const newTags = [...record.tag_list, newTag];
-    onUpdate({ ...record, tag_list: newTags, id: record.id });
-    setActiveTagInputRowId(null);
-  };
-
-  // Hide tag input when clicking outside
-  React.useEffect(() => {
-    function handleClickOutside(event) {
-      if (
-        tagInputRef.current &&
-        !tagInputRef.current.contains(event.target)
-      ) {
-        setActiveTagInputRowId(null);
-      }
-    }
-    if (activeTagInputRowId !== null) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [activeTagInputRowId]);
-
-  const renderTransactionItem = (record) => {
-    const isEditing = editingTransaction && editingTransaction.id === record.id;
-
-    return (
-      <List.Item key={record.id}>
-        <Card
+  // Define table columns
+  const columns = [
+    {
+      title: "Date",
+      dataIndex: "transaction_date",
+      key: "transaction_date",
+      width: 120,
+      render: (value) => (
+        <Tag color="blue" style={{ fontSize: "12px", margin: 0 }}>
+          {formatDisplayDate(value)}
+        </Tag>
+      ),
+    },
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+      width: 300,
+      ellipsis: true,
+      render: (value) => (
+        <Text style={{ fontSize: "14px" }} title={value} ellipsis>
+          {value}
+        </Text>
+      ),
+    },
+    {
+      title: "Amount",
+      dataIndex: "amount",
+      key: "amount",
+      width: 120,
+      render: (value, record) => (
+        <Space direction="horizontal" size="small">
+          <Text
+            strong
+            style={{
+              color: record.is_credit ? "#52c41a" : "rgb(115, 133, 213)",
+              fontSize: "14px",
+            }}
+          >
+            {Math.abs(value).toFixed(2)}
+          </Text>
+        </Space>
+      ),
+    },
+    {
+      title: "Tags",
+      dataIndex: "tag_list",
+      key: "tag_list",
+      render: (tagList, record) => (
+        <div
           style={{
-            width: '100%',
-            marginBottom: 8,
-            borderLeft: `4px solid ${record.is_credit ? '#52c41a' : '#f5222d'}`,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            display: "flex",
+            alignItems: "center",
+            gap: "2px",
+            flexWrap: "wrap",
           }}
-          bodyStyle={{ padding: '12px 16px' }}
-          hoverable
         >
-          <Row gutter={[16, 0]} align="middle">
-            {/* Main transaction info - single line with new order */}
-            <Col xs={24} sm={18} md={20}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                {/* 1. Date */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', minWidth: '110px', flexShrink: 0 }}>
-                  <CalendarOutlined style={{ color: '#1890ff', fontSize: '12px' }} />
-                  {editingCell && editingCell.recordId === record.id && editingCell.field === 'transaction_date' ? (
-                    <DatePicker
-                      ref={inputRef}
-                      size="small"
-                      format="DD-MM-YYYY"
-                      value={editingValue ? dayjs(editingValue) : null}
-                      onChange={val => {
-                        if (val) {
-                          setEditingValue(val.format("YYYY-MM-DD"));
-                        } else {
-                          setEditingValue("");
-                        }
-                      }}
-                      onBlur={() => {
-                        if (editingValue) {
-                          const newDate = dayjs(editingValue, "YYYY-MM-DD");
-                          const originalDate = parseTransactionDate(record.transaction_date);
-                          if (newDate.isValid() && originalDate.isValid() && !newDate.isSame(originalDate, 'day')) {
-                            handleInlineSave(record, 'transaction_date', newDate);
-                          } else {
-                            handleInlineCancel();
-                          }
-                        } else {
-                          handleInlineCancel();
-                        }
-                      }}
-                      autoFocus
-                    />
-                  ) : (
-                    <Tag
-                      color="blue"
-                      style={{ cursor: 'pointer', fontSize: '12px', margin: 0 }}
-                      onClick={() => startInlineEdit(record, 'transaction_date', record.transaction_date)}
-                    >
-                      {formatDisplayDate(record.transaction_date)}
-                    </Tag>
-                  )}
-                </div>
-
-                {/* 2. Transaction Name - Reduced space */}
-                <div style={{ flex: '1', minWidth: '150px', maxWidth: '200px' }}>
-                  {editingCell && editingCell.recordId === record.id && editingCell.field === 'name' ? (
-                    <Input
-                      ref={inputRef}
-                      size="small"
-                      value={editingValue}
-                      onChange={e => setEditingValue(e.target.value)}
-                      onPressEnter={() => handleInlineSave(record, 'name', editingValue)}
-                      onBlur={() => handleInlineSave(record, 'name', editingValue)}
-                      placeholder="Transaction name"
-                      autoFocus
-                    />
-                  ) : (
-                    <Text
-                      strong
-                      style={{
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        display: 'block',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                      }}
-                      onClick={() => startInlineEdit(record, 'name', record.name)}
-                      title={record.name} // Show full name on hover
-                    >
-                      {record.name}
-                    </Text>
-                  )}
-                </div>
-
-                {/* 3. Amount (Value with Credit/Debit) */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: '140px', flexShrink: 0 }}>
-                  {editingCell && editingCell.recordId === record.id && editingCell.field === 'amount' ? (
-                    <Space direction="horizontal" size="small">
-                      <Input
-                        ref={inputRef}
-                        size="small"
-                        type="number"
-                        step="0.01"
-                        value={editingValue}
-                        onChange={e => setEditingValue(e.target.value)}
-                        onPressEnter={() => handleInlineSave(record, 'amount', editingValue)}
-                        onBlur={() => handleInlineSave(record, 'amount', editingValue)}
-                        placeholder="0.00"
-                        style={{ width: 80 }}
-                        autoFocus
-                      />
-                      <Switch
-                        size="small"
-                        checked={record.is_credit}
-                        onChange={(checked) => handleInlineSave(record, 'is_credit', checked)}
-                        checkedChildren="Cr"
-                        unCheckedChildren="Dr"
-                      />
-                    </Space>
-                  ) : (
-                    <Space direction="horizontal" size="small">
-                      <Text
-                        strong
-                        style={{
-                          color: record.is_credit ? '#52c41a' : '#f5222d',
-                          cursor: 'pointer',
-                          fontSize: '14px'
-                        }}
-                        onClick={() => startInlineEdit(record, 'amount', Math.abs(record.amount))}
-                      >
-                        {Math.abs(record.amount).toFixed(2)}
-                      </Text>
-                      <Switch
-                        size="small"
-                        checked={record.is_credit}
-                        onChange={(checked) => handleInlineSave(record, 'is_credit', checked)}
-                        checkedChildren="Cr"
-                        unCheckedChildren="Dr"
-                      />
-                    </Space>
-                  )}
-                </div>
-
-                {/* 4. Tags - Optimized for 8+ tags */}
-                <div style={{ flex: '2', display: 'flex', alignItems: 'center', gap: '3px', minWidth: '300px' }}>
-                  <TagsOutlined style={{ color: '#722ed1', fontSize: '12px', flexShrink: 0 }} />
-                  {isEditing ? (
-                    <FormItemWrapper>
-                      <Form.Item name="tag_list" style={{ margin: 0 }}>
-                        <MinWidthSelect
-                          size="small"
-                          mode="tags"
-                          placeholder="Add tags..."
-                          style={{ minWidth: 200 }}
-                        >
-                          {tags.map((tag) => (
-                            <Option key={tag} value={tag}>
-                              {tag}
-                            </Option>
-                          ))}
-                        </MinWidthSelect>
-                      </Form.Item>
-                    </FormItemWrapper>
-                  ) : (
-                    <div style={{ display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap", overflow: "hidden" }}>
-                      {record.tag_list && record.tag_list.map
-                        ? record.tag_list.map((tag, index) => (
-                            <Tag
-                              key={index}
-                              color="purple"
-                              closable
-                              onClose={e => {
-                                e.stopPropagation();
-                                handleRemoveTag(record, tag);
-                              }}
-                              style={{
-                                fontSize: '10px',
-                                margin: 0,
-                                padding: '0 3px',
-                                height: '18px',
-                                lineHeight: '16px',
-                                flexShrink: 0
-                              }}
-                            >
-                              {tag}
-                            </Tag>
-                          ))
-                        : null}
-                      {activeTagInputRowId === record.id && (
-                        <span ref={tagInputRef}>
-                          <Select
-                            size="small"
-                            mode="tags"
-                            style={{ minWidth: 120 }}
-                            placeholder="Add tags..."
-                            value={[]} // Start with empty value
-                            onChange={(values) => {
-                              // Handle multiple tags being added at once
-                              if (values && values.length > 0) {
-                                const newTags = values.filter(tag =>
-                                  tag && tag.trim() && !record.tag_list.includes(tag.trim())
-                                );
-                                if (newTags.length > 0) {
-                                  const updatedTags = [...record.tag_list, ...newTags.map(tag => tag.trim())];
-                                  onUpdate({ ...record, tag_list: updatedTags, id: record.id });
-                                }
-                              }
-                              setActiveTagInputRowId(null);
-                            }}
-                            onBlur={() => setActiveTagInputRowId(null)}
-                            onInputKeyDown={(e) => {
-                              // Handle Enter key to add typed tags
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                const inputValue = e.target.value;
-                                if (inputValue && inputValue.trim()) {
-                                  // Split by comma or space and add all tags
-                                  const newTags = inputValue.split(/[,\s]+/).map(tag => tag.trim()).filter(tag =>
-                                    tag && !record.tag_list.includes(tag)
-                                  );
-                                  if (newTags.length > 0) {
-                                    const updatedTags = [...record.tag_list, ...newTags];
-                                    onUpdate({ ...record, tag_list: updatedTags, id: record.id });
-                                  }
-                                  setActiveTagInputRowId(null);
-                                }
-                              }
-                              // Handle Escape key to cancel
-                              if (e.key === 'Escape') {
-                                setActiveTagInputRowId(null);
-                              }
-                            }}
-                            showArrow={false}
-                            showSearch={true}
-                            open={false} // Keep dropdown closed to prevent auto-selection
-                            autoFocus
-                            filterOption={false} // Disable filtering to allow free text entry
-                            tokenSeparators={[',', ' ']} // Allow comma and space as separators
-                          >
-                            {tags.map((tag) => (
-                              <Option key={tag} value={tag}>
-                                {tag}
-                              </Option>
-                            ))}
-                          </Select>
-                        </span>
-                      )}
-                      {activeTagInputRowId !== record.id && (
-                        <Button
-                          size="small"
-                          type="text"
-                          icon={<PlusOutlined />}
-                          onClick={() => setActiveTagInputRowId(record.id)}
-                          style={{ height: 18, width: 18, padding: 0, flexShrink: 0 }}
-                        />
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </Col>
-
-            {/* 5. Reminder and 6. Edit Actions */}
-            <Col xs={24} sm={6} md={4}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                <ReminderCell
-                  reminder={record.reminder}
-                  record={record}
-                  onUpdate={onUpdate}
-                />
-                <Button
-                  size="small"
-                  icon={<EditOutlined />}
-                  onClick={() => {
-                    onEdit(record);
-                    const parsedDate = parseTransactionDate(record.transaction_date);
-                    form.setFieldsValue({
-                      ...record,
-                      transaction_date: parsedDate,
-                      tag_list: record.tag_list,
-                      is_credit: record.is_credit || false,
-                    });
+          {record.tag_list && record.tag_list.map
+            ? record.tag_list.map((tag, index) => (
+                <Tag
+                  key={index}
+                  color="purple"
+                  closable
+                  onClose={(e) => {
+                    e.stopPropagation();
+                    handleRemoveTag(record, tag);
                   }}
-                />
-              </div>
-            </Col>
-          </Row>
-        </Card>
-      </List.Item>
-    );
-  };
+                  style={{
+                    fontSize: "12px",
+                    margin: "1px",
+                    padding: "1px 3px",
+                  }}
+                >
+                  {tag}
+                </Tag>
+              ))
+            : null}
+        </div>
+      ),
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      width: 100,
+      render: (_, record) => (
+        <Button
+          size="small"
+          icon={<EditOutlined />}
+          onClick={() => handleEditClick(record)}
+        ></Button>
+      ),
+    },
+  ];
 
   return (
     <StyledCard>
       <Form form={form} onFinish={onUpdate} component={false}>
-        <List
+        <Table
           loading={loading}
           dataSource={transactions}
-          renderItem={renderTransactionItem}
+          columns={columns}
+          rowKey="id"
           pagination={{
             ...pagination,
             showTotal: (total, range) =>
@@ -584,9 +370,136 @@ const TransactionList = ({
             showSizeChanger: true,
             showQuickJumper: true,
           }}
-          style={{ marginTop: 16 }}
+          onChange={onTableChange}
+          scroll={{ x: 800 }}
+          bordered
         />
       </Form>
+
+      {/* Edit Modal */}
+      <Modal
+        title="Edit Transaction"
+        open={editModalVisible}
+        onOk={handleModalSave}
+        onCancel={handleModalCancel}
+        width={600}
+        okText="Save"
+        cancelText="Cancel"
+      >
+        <Form
+          form={editForm}
+          layout="vertical"
+          initialValues={{
+            is_credit: false,
+          }}
+        >
+          <Form.Item
+            name="name"
+            label="Transaction Name"
+            rules={[
+              { required: true, message: "Please enter transaction name" },
+            ]}
+          >
+            <Input placeholder="Enter transaction name" />
+          </Form.Item>
+
+          <div style={{ display: "flex", gap: "16px" }}>
+            <Form.Item
+              name="amount"
+              label="Amount"
+              rules={[{ required: true, message: "Please enter amount" }]}
+              style={{ flex: 1 }}
+            >
+              <Input
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                style={{ width: "100%" }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="transaction_date"
+              label="Transaction Date"
+              rules={[{ required: true, message: "Please select date" }]}
+              style={{ flex: 1 }}
+            >
+              <DatePicker
+                format="DD-MM-YYYY"
+                style={{ width: "100%" }}
+                placeholder="Select date"
+              />
+            </Form.Item>
+          </div>
+
+          <Form.Item name="tag_list" label="Tags">
+            <Select
+              mode="tags"
+              placeholder="Add tags..."
+              style={{ width: "100%" }}
+              tokenSeparators={[",", " "]}
+            >
+              {tags.map((tag) => (
+                <Option key={tag} value={tag}>
+                  {tag}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <div style={{ display: "flex", gap: "16px", alignItems: "end" }}>
+            <div style={{ flex: 1 }}>
+              <Form.Item name="is_credit" label="Type" valuePropName="checked">
+                <Switch checkedChildren="Credit" unCheckedChildren="Debit" />
+              </Form.Item>
+            </div>
+            <div style={{ flex: 1 }}>
+              <Form.Item label="Reminder">
+                <Button
+                  icon={<BellOutlined />}
+                  type={
+                    editingRecord &&
+                    editingRecord.reminder &&
+                    editingRecord.reminder.date
+                      ? "primary"
+                      : "default"
+                  }
+                  onClick={() => handleReminderClick()}
+                  style={{ width: "100%" }}
+                >
+                  {editingRecord &&
+                  editingRecord.reminder &&
+                  editingRecord.reminder.date
+                    ? "Edit Reminder"
+                    : "Set Reminder"}
+                </Button>
+              </Form.Item>
+            </div>
+          </div>
+
+          {/* Inline Reminder Form */}
+          {showReminderForm && (
+            <div
+              style={{
+                marginTop: 16,
+                padding: 16,
+                border: "1px solid #d9d9d9",
+                borderRadius: 6,
+                backgroundColor: "#fafafa",
+              }}
+            >
+              <ReminderForm
+                reminder={editingRecord && editingRecord.reminder}
+                onChange={() => {}}
+                onSave={handleReminderSave}
+                onCancel={handleReminderCancel}
+              />
+            </div>
+          )}
+        </Form>
+      </Modal>
+
+      {/* Remove the separate Reminder Modal - no longer needed */}
     </StyledCard>
   );
 };

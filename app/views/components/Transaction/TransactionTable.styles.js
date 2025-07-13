@@ -14,6 +14,24 @@ export const StyledCard = styled(Card)`
     max-height: 600px;
     overflow-y: auto;
   }
+
+  .credit-row {
+    border-left: 4px solid #52c41a;
+    background-color: #f6ffed;
+  }
+
+  .debit-row {
+    border-left: 4px solid #f5222d;
+    background-color: #fff2f0;
+  }
+
+  .credit-row:hover {
+    background-color: #f6ffed !important;
+  }
+
+  .debit-row:hover {
+    background-color: #fff2f0 !important;
+  }
 `;
 
 // Filter dropdown containers

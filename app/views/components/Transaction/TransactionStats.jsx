@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Statistic, Row, Col } from "antd";
+import { Card, Statistic, Row, Col, Typography } from "antd";
 import styled from "styled-components";
 import { CalendarOutlined } from "@ant-design/icons";
 const StatsRow = styled(Row)`
@@ -9,13 +9,11 @@ const StatsRow = styled(Row)`
 const CustomLabel = styled.div`
   margin-bottom: 4px;
   color: rgba(0, 0, 0, 0.45);
-  font-size: 14px;
 `;
 
 const PeriodText = styled.div`
   margin-bottom: 4px;
   color: #f59e0b;
-  font-size: 19px;
 `;
 
 const StatisticValue = {
@@ -25,7 +23,7 @@ const StatisticValue = {
   balance: { color: "#f59e0b" },
   period: { color: "#f59e0b" },
 };
-
+const { Text } = Typography;
 const TransactionStats = ({ stats, currentDateRange }) => {
   const balance = (stats.credit || 0) - (stats.debit || 0);
   return (
@@ -73,15 +71,20 @@ const TransactionStats = ({ stats, currentDateRange }) => {
         </Card>
       </Col>
       <Col xs={24} sm={24} md={24}>
-        <Card>
-          <CustomLabel>Current Period</CustomLabel>
-          <PeriodText>
+        <Text
+          type="secondary"
+          style={{ textAlign: "right", display: "block", marginRight: 15 }}
+        >
+          <CustomLabel style={{ display: "inline", marginRight: 8 }}>
             <CalendarOutlined style={{ marginRight: 8 }} />
+            Current Period:
+          </CustomLabel>
+          <PeriodText style={{ display: "inline" }}>
             {currentDateRange.startDate.format("DD-MM-YYYY") +
               " - " +
               currentDateRange.endDate.format("DD-MM-YYYY")}
           </PeriodText>
-        </Card>
+        </Text>
       </Col>
     </StatsRow>
   );

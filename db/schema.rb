@@ -18,6 +18,14 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_09_120003) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "closures", force: :cascade do |t|
+    t.string "name", limit: 191, null: false
+    t.date "start_date", null: false
+    t.date "end_date", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "comments", force: :cascade do |t|
     t.integer "task_id", null: false
     t.text "content"
@@ -110,7 +118,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_09_120003) do
 
   create_table "transactions", force: :cascade do |t|
     t.string "name", limit: 191, null: false
-    t.decimal "amount", precision: 15, scale: 2, null: false
+    t.integer "amount", null: false
     t.date "transaction_date", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

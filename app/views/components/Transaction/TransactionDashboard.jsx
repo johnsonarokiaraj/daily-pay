@@ -63,7 +63,7 @@ const TransactionDashboard = () => {
   };
 
   return (
-    <div style={{ padding: "24px" }}>
+    <div style={{ padding: "12px" }}>
       <TransactionHeader />
 
       <TransactionStats stats={stats} currentDateRange={currentDateRange} />
