@@ -10,24 +10,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_07_09_120003) do
-  create_table "auto_tag_rules", force: :cascade do |t|
+ActiveRecord::Schema[7.1].define(version: 2025_02_23_174618) do
+  create_table "auto_tag_rules", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.text "required_tags"
     t.text "auto_tags"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "closures", force: :cascade do |t|
-    t.string "name", limit: 191, null: false
-    t.date "start_date", null: false
-    t.date "end_date", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "comments", force: :cascade do |t|
-    t.integer "task_id", null: false
+  create_table "comments", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.bigint "task_id", null: false
     t.text "content"
     t.string "author"
     t.datetime "created_at", null: false
@@ -35,60 +27,59 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_09_120003) do
     t.index ["task_id"], name: "index_comments_on_task_id"
   end
 
-  create_table "tag_insights_board_records", force: :cascade do |t|
+  create_table "tag_insights_board_records", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "main_tag", null: false
     t.text "sub_tags"
     t.integer "user_id"
+    t.integer "position"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "position"
   end
 
-  create_table "taggings", force: :cascade do |t|
-    t.integer "tag_id"
+  create_table "taggings", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.bigint "tag_id"
     t.string "taggable_type"
-    t.integer "taggable_id"
+    t.bigint "taggable_id"
     t.string "tagger_type"
-    t.integer "tagger_id"
+    t.bigint "tagger_id"
     t.string "context", limit: 128
-    t.datetime "created_at", precision: nil
+    t.datetime "created_at"
     t.string "tenant", limit: 128
     t.index ["context"], name: "index_taggings_on_context"
-    t.index ["tag_id", "taggable_id", "taggable_type", "context", "tagger_id", "tagger_type"], name: "taggings_idx", unique: true
     t.index ["tag_id"], name: "index_taggings_on_tag_id"
     t.index ["taggable_id", "taggable_type", "context"], name: "taggings_taggable_context_idx"
     t.index ["taggable_id", "taggable_type", "tagger_id", "context"], name: "taggings_idy"
     t.index ["taggable_id"], name: "index_taggings_on_taggable_id"
-    t.index ["taggable_type", "taggable_id"], name: "index_taggings_on_taggable_type_and_taggable_id"
+    t.index ["taggable_type", "taggable_id"], name: "index_taggings_on_taggable"
     t.index ["taggable_type"], name: "index_taggings_on_taggable_type"
     t.index ["tagger_id", "tagger_type"], name: "index_taggings_on_tagger_id_and_tagger_type"
     t.index ["tagger_id"], name: "index_taggings_on_tagger_id"
-    t.index ["tagger_type", "tagger_id"], name: "index_taggings_on_tagger_type_and_tagger_id"
+    t.index ["tagger_type", "tagger_id"], name: "index_taggings_on_tagger"
     t.index ["tenant"], name: "index_taggings_on_tenant"
   end
 
-  create_table "tags", force: :cascade do |t|
+  create_table "tags", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.string "name"
+    t.integer "taggings_count", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "taggings_count", default: 0
     t.index ["name"], name: "index_tags_on_name", unique: true
   end
 
-  create_table "targets", force: :cascade do |t|
-    t.integer "view_id", null: false
+  create_table "targets", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.bigint "view_id", null: false
     t.string "target_type", null: false
     t.decimal "value", precision: 15, scale: 2, null: false
     t.date "target_date", null: false
+    t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "name"
     t.index ["view_id", "target_type", "target_date"], name: "index_targets_on_view_id_and_target_type_and_target_date", unique: true
     t.index ["view_id"], name: "index_targets_on_view_id"
   end
 
-  create_table "task_sections", force: :cascade do |t|
+  create_table "task_sections", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "abbreviation", limit: 10, null: false
     t.text "description"
@@ -99,8 +90,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_09_120003) do
     t.index ["position"], name: "index_task_sections_on_position"
   end
 
-  create_table "tasks", force: :cascade do |t|
-    t.integer "task_section_id", null: false
+  create_table "tasks", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.bigint "task_section_id", null: false
     t.string "task_id", null: false
     t.string "name", null: false
     t.text "description"
@@ -116,17 +107,17 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_09_120003) do
     t.index ["task_section_id"], name: "index_tasks_on_task_section_id"
   end
 
-  create_table "transactions", force: :cascade do |t|
+  create_table "transactions", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.string "name", limit: 191, null: false
     t.integer "amount", null: false
     t.date "transaction_date", null: false
+    t.boolean "is_credit", default: false, null: false
+    t.json "reminder"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "is_credit", default: false, null: false
-    t.json "reminder", default: {}
   end
 
-  create_table "views", force: :cascade do |t|
+  create_table "views", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.string "name", null: false
     t.text "filters"
     t.integer "user_id"
