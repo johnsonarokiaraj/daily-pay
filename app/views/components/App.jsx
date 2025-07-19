@@ -31,6 +31,7 @@ import {
   SearchOutlined,
   QuestionCircleOutlined,
   CheckSquareOutlined,
+  ClockCircleOutlined,
 } from "@ant-design/icons";
 import DailyPayLogo from "../../javascript/components/DailyPayLogo";
 
@@ -44,6 +45,7 @@ import TargetsApp from "./TargetsApp";
 import CompareViewsDashboard from "./Transaction/CompareViewsDashboard";
 import TagInsightsBoardDetail from "./Transaction/TagInsightsBoardDetail";
 import TasksModule from "../../javascript/components/TasksModule";
+import TimeManagement from "./TimeManagement";
 
 const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
@@ -65,6 +67,7 @@ const AppContent = () => {
     if (path === "/targets") return "targets";
     if (path === "/compare") return "compare";
     if (path === "/tasks") return "tasks";
+    if (path === "/time_management") return "time_management";
     if (path === "/reminders") return "reminders";
     if (path === "/insights") return "insights";
     if (path === "/budget_assistant") return "budget_assistant";
@@ -84,9 +87,7 @@ const AppContent = () => {
     ) {
       return ["finance"];
     }
-    if (
-      ["/tasks", "/reminders", "/insights", "/budget_assistant"].includes(path)
-    ) {
+    if (["/tasks", "/time_management", "/reminders", "/insights", "/budget_assistant"].includes(path)) {
       return ["assistance"];
     }
     if (["/tags", "/backup", "/preferences"].includes(path)) {
@@ -357,6 +358,19 @@ const AppContent = () => {
                 Tasks
               </Link>
             </Menu.Item>
+            <Menu.Item
+              key="time_management"
+              icon={<ClockCircleOutlined />}
+              style={{
+                borderRadius: "0 24px 24px 0",
+                marginRight: "12px",
+                marginLeft: "0",
+              }}
+            >
+              <Link to="/time_management" style={{ color: "inherit", textDecoration: "none" }}>
+                Time Management
+              </Link>
+            </Menu.Item>
           </SubMenu>
 
           {/* Settings Section */}
@@ -576,6 +590,7 @@ const AppContent = () => {
               element={<TagInsightsBoardDetail />}
             />
             <Route path="/tasks" element={<TasksModule />} />
+            <Route path="/time_management" element={<TimeManagement />} />
             {/* Placeholder routes for new sections */}
             <Route
               path="/reminders"

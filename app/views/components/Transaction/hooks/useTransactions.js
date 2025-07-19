@@ -166,6 +166,8 @@ export const useTransactions = () => {
       filters.end_date = values.end_date.format("DD-MM-YYYY");
     if (values.tag_list && values.tag_list.length)
       filters.tag_list = values.tag_list.join(",");
+    if (values.transaction_name)
+      filters.transaction_name = values.transaction_name;
 
     // Set allow_date flag based on whether dates are provided
     if (values.start_date || values.end_date) {

@@ -88,7 +88,7 @@ class Api::TransactionsController < ApplicationController
 
   # GET /api/transactions/stats
   def stats
-    filters = params.permit(:start_date, :end_date, :tag_list)
+    filters = params.permit(:start_date, :end_date, :tag_list, :transaction_name)
     transactions = Transaction.all
     if filters[:start_date].present?
       transactions = transactions.where('transaction_date >= ?', Date.strptime(filters[:start_date], '%d-%m-%Y'))
@@ -99,6 +99,9 @@ class Api::TransactionsController < ApplicationController
     if filters[:tag_list].present?
       tags = filters[:tag_list].split(',')
       transactions = transactions.tagged_with(tags)
+    end
+    if filters[:transaction_name].present?
+      transactions = transactions.where("name LIKE ?", "%#{filters[:transaction_name]}%")
     end
     credit = transactions.where(is_credit: true).sum(:amount)
     debit = transactions.where(is_credit: false).sum(:amount)
@@ -131,6 +134,11 @@ class Api::TransactionsController < ApplicationController
     # Apply tag filter if present
     if params[:tag_list].present?
       transactions = transactions.tagged_with(params[:tag_list])
+    end
+
+    # Apply transaction name filter if present
+    if params[:transaction_name].present?
+      transactions = transactions.where("name LIKE ?", "%#{params[:transaction_name]}%")
     end
 
     # Only apply date filter if explicitly requested or dates are provided

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Form,
   Input,
@@ -10,6 +10,7 @@ import {
   Col,
   Switch,
   Badge,
+  Tag,
 } from "antd";
 import { PlusOutlined, FilterOutlined, SaveOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -40,6 +41,20 @@ const FullWidthSelect = styled(Select)`
   width: 100%;
 `;
 
+const TagSetContainer = styled.div`
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+`;
+
+const TagSetItem = styled(Tag)`
+  cursor: pointer;
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
 const TransactionForm = ({
   form,
   onSubmit,
@@ -50,6 +65,36 @@ const TransactionForm = ({
   tags,
   tagSuggestions = [],
 }) => {
+  const [tagSets, setTagSets] = useState([]);
+
+  // Fetch tag sets when component mounts
+  useEffect(() => {
+    fetch("/tag_sets.json", {
+      headers: {
+        Accept: "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Network response was not ok: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setTagSets(data);
+      })
+      .catch((error) => console.error("Error fetching tag sets:", error));
+  }, []);
+
+  // Handle tag set selection
+  const handleTagSetClick = (tagSet) => {
+    if (tagSet && tagSet.tags) {
+      const currentTags = form.getFieldValue("tag_list") || [];
+      const newTags = [...new Set([...currentTags, ...tagSet.tags])]; // Remove duplicates
+      form.setFieldsValue({ tag_list: newTags });
+    }
+  };
+
   return (
     <FormCard>
       <Form
@@ -111,68 +156,88 @@ const TransactionForm = ({
             </NoMarginFormItem>
           </Col>
           <Col xs={16} sm={7}>
-            <NoMarginFormItem>
-              <Form.Item name="tag_list">
-                <FullWidthSelect
-                  mode="tags"
-                  placeholder="Add tags..."
-                  dropdownRender={(menu) => (
-                    <>
-                      {tagSuggestions && tagSuggestions.length > 0 && (
-                        <div
-                          style={{
-                            padding: "8px 12px",
-                            borderBottom: "1px solid #eee",
-                            background: "#fafafa",
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontWeight: 500,
-                              color: "#888",
-                              fontSize: 12,
-                            }}
-                          >
-                            Suggestions:{" "}
-                          </span>
-                          {tagSuggestions.map((tag) => (
-                            <span
-                              key={tag}
+            <Row gutter={[0, 8]}>
+              <Col span={24}>
+                <NoMarginFormItem>
+                  <Form.Item name="tag_list">
+                    <FullWidthSelect
+                      mode="tags"
+                      placeholder="Add tags..."
+                      dropdownRender={(menu) => (
+                        <>
+                          {tagSuggestions && tagSuggestions.length > 0 && (
+                            <div
                               style={{
-                                display: "inline-block",
-                                background: "#e6f7ff",
-                                color: "#1677ff",
-                                borderRadius: 4,
-                                padding: "2px 8px",
-                                marginRight: 6,
-                                fontSize: 12,
-                                cursor: "pointer",
-                              }}
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                const current = form.getFieldValue("tag_list") || [];
-                                if (!current.includes(tag)) {
-                                  form.setFieldsValue({ tag_list: [...current, tag] });
-                                }
+                                padding: "8px 12px",
+                                borderBottom: "1px solid #eee",
+                                background: "#fafafa",
                               }}
                             >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
+                              <span
+                                style={{
+                                  fontWeight: 500,
+                                  color: "#888",
+                                  fontSize: 12,
+                                }}
+                              >
+                                Suggestions:{" "}
+                              </span>
+                              {tagSuggestions.map((tag) => (
+                                <span
+                                  key={tag}
+                                  style={{
+                                    display: "inline-block",
+                                    background: "#e6f7ff",
+                                    color: "#1677ff",
+                                    borderRadius: 4,
+                                    padding: "2px 8px",
+                                    marginRight: 6,
+                                    fontSize: 12,
+                                    cursor: "pointer",
+                                  }}
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    const current =
+                                      form.getFieldValue("tag_list") || [];
+                                    if (!current.includes(tag)) {
+                                      form.setFieldsValue({
+                                        tag_list: [...current, tag],
+                                      });
+                                    }
+                                  }}
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {menu}
+                        </>
                       )}
-                      {menu}
-                    </>
-                  )}
-                >
-                  {tags.map((tag) => (
-                    <Option key={tag} value={tag}>
-                      {tag}
-                    </Option>
+                    >
+                      {tags.map((tag) => (
+                        <Option key={tag} value={tag}>
+                          {tag}
+                        </Option>
+                      ))}
+                    </FullWidthSelect>
+                  </Form.Item>
+                </NoMarginFormItem>
+              </Col>
+              <Col span={24}>
+                <TagSetContainer>
+                  {tagSets.map((tagSet) => (
+                    <TagSetItem
+                      key={tagSet.id}
+                      color="blue"
+                      onClick={() => handleTagSetClick(tagSet)}
+                    >
+                      {tagSet.name}
+                    </TagSetItem>
                   ))}
-                </FullWidthSelect>
-              </Form.Item>
-            </NoMarginFormItem>
+                </TagSetContainer>
+              </Col>
+            </Row>
           </Col>
           <Col xs={8} sm={4}>
             <Space>

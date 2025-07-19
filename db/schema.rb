@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_02_23_174618) do
+ActiveRecord::Schema[7.1].define(version: 2025_07_19_152319) do
   create_table "auto_tag_rules", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.text "required_tags"
     t.text "auto_tags"
@@ -33,6 +33,13 @@ ActiveRecord::Schema[7.1].define(version: 2025_02_23_174618) do
     t.text "sub_tags"
     t.integer "user_id"
     t.integer "position"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "tag_sets", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.string "name"
+    t.text "tags"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -109,7 +116,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_02_23_174618) do
 
   create_table "transactions", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.string "name", limit: 191, null: false
-    t.integer "amount", null: false
+    t.decimal "amount", precision: 15, scale: 2, null: false
     t.date "transaction_date", null: false
     t.boolean "is_credit", default: false, null: false
     t.json "reminder"

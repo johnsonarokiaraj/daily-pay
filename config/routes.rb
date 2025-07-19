@@ -1,4 +1,15 @@
 Rails.application.routes.draw do
+  # Remove these individual tag_sets routes
+  # get 'tag_sets/index'
+  # get 'tag_sets/new'
+  # get 'tag_sets/create'
+  # get 'tag_sets/edit'
+  # get 'tag_sets/update'
+  # get 'tag_sets/destroy'
+  
+  # Add proper resourceful routing for tag_sets
+  resources :tag_sets
+  
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

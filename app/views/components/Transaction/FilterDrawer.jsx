@@ -163,6 +163,9 @@ const FilterDrawer = ({ open, onClose, form, onFilter, onClear, tags }) => {
           </>
         )}
 
+        <Form.Item name="transaction_name" label="Transaction Name">
+          <Input placeholder="Filter by transaction name..." />
+        </Form.Item>
         <Form.Item name="start_date" label="Start Date">
           <FullWidthDatePicker format="DD-MM-YYYY" />
         </Form.Item>

@@ -10,5 +10,5 @@ development:
   database: daily_pay_web
   username: root
   password:
-
-
+  socket: /opt/homebrew/var/mysql/mysql.sock
+  # You can also try /tmp/mysql.sock if the above doesn't work
