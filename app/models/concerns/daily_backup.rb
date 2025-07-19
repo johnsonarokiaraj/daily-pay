@@ -15,11 +15,34 @@ module DailyBackup
     backup_file = backup_dir.join("db_data_#{today}.sql")
     return if File.exist?(backup_file)
 
-    # Detect if using SQLite and use the correct backup command
+    # Detect database adapter and use the correct backup command
     config = ActiveRecord::Base.connection_db_config.configuration_hash
-    if config[:adapter] == 'sqlite3'
+    case config[:adapter]
+    when 'sqlite3'
       db_path = config[:database]
       cmd = "sqlite3 #{db_path} .dump > #{backup_file}"
+      system(cmd)
+    when 'mysql2'
+      # Use mysqldump for MySQL
+      db = config[:database]
+      user = config[:username]
+      host = config[:host] || 'localhost'
+      password = config[:password]
+      port = config[:port] || 3306
+
+      # Build mysqldump command
+      cmd_parts = ["mysqldump"]
+      cmd_parts << "-h #{host}"
+      cmd_parts << "-P #{port}"
+      cmd_parts << "-u #{user}" if user
+      cmd_parts << "-p#{password}" if password && !password.empty?
+      cmd_parts << "--single-transaction"
+      cmd_parts << "--routines"
+      cmd_parts << "--triggers"
+      cmd_parts << db
+      cmd_parts << "> #{backup_file}"
+
+      cmd = cmd_parts.join(' ')
       system(cmd)
     else
       # Use pg_dump for PostgreSQL, adjust for your DB if needed
