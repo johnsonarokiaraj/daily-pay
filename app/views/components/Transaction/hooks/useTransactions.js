@@ -6,6 +6,7 @@ import axios from "axios";
 export const useTransactions = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [tags, setTags] = useState([]);
   const [stats, setStats] = useState({ count: 0, credit: 0, debit: 0 });
   const [editingTransaction, setEditingTransaction] = useState(null);
@@ -29,40 +30,46 @@ export const useTransactions = () => {
 
   // State for pagination
   const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 100,
-    total: 0,
-    showSizeChanger: true,
-    showQuickJumper: true,
-    pageSizeOptions: ["10", "20", "50", "100"],
+    page: 1,
+    total_count: 0,
+    total_pages: 0,
+    has_more: false
   });
 
   const fetchTransactions = async (filters = {}) => {
-    setLoading(true);
+    // Reset pagination when fetching new data
+
+    if (filters.page !== undefined) {
+      filters.page = filters.page; // Use current page if not specified  
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+      filters.page = pagination.page;
+    }
+    filters.page_size = filters.page_size || 25; // Default to 25 items per page
+
     try {
       const response = await axios.get("/api/transactions", {
         params: filters,
       });
 
       if (response.data.transactions) {
-        setTransactions(response.data.transactions);
+        setTransactions(filters.page === 1 ? response.data.transactions : [...transactions, ...response.data.transactions]);
         setStats({
-          count: response.data.transactions.length,
+          count: filters.page === 1 ? response.data.transactions.length : [...transactions, ...response.data.transactions].length,
           credit: response.data.credit || 0,
           debit: response.data.debit || 0,
         });
 
-        // Update pagination total with full dataset length
-        setPagination((prev) => ({
-          ...prev,
-          total: response.data.transactions.length,
-          current: 1, // Reset to first page when data changes
-        }));
+        setPagination({
+          ...response.data.pagination,
+        });
       }
     } catch (error) {
       message.error("Failed to load transactions");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -88,14 +95,12 @@ export const useTransactions = () => {
         is_credit: values.is_credit || false,
       };
 
-      await axios.post("/api/transactions", { transaction: data });
+      const response = await axios.post("/api/transactions", { transaction: data });
       message.success("Transaction added successfully");
-
-      // Reset to first page when adding new transaction
-      setPagination((prev) => ({ ...prev, current: 1 }));
-
-      // Preserve current filters when refreshing data
-      fetchTransactions(currentFilters);
+      if (response.data.transaction && response.data.status === "success") {
+        // Add the new transaction to the list
+        setTransactions((prev) => [response.data.transaction, ...prev]);
+      }
       return true; // Success indicator
     } catch (error) {
       message.error("Failed to save transaction");
@@ -192,8 +197,7 @@ export const useTransactions = () => {
     });
 
     // Reset to first page when applying filters
-    setPagination((prev) => ({ ...prev, current: 1 }));
-    fetchTransactions(filters);
+    fetchTransactions({ ...filters, page: 1 }); // Ensure page size is set
   };
 
   const handleEdit = (record) => {
@@ -205,16 +209,6 @@ export const useTransactions = () => {
 
   const cancelEdit = () => {
     setEditingTransaction(null);
-  };
-
-  // Handle table pagination, sorting, and filtering changes
-  const handleTableChange = (newPagination, filters, sorter) => {
-    // Only update pagination state - no API call needed for frontend pagination
-    setPagination((prev) => ({
-      ...prev,
-      current: newPagination.current,
-      pageSize: newPagination.pageSize,
-    }));
   };
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -254,8 +248,7 @@ export const useTransactions = () => {
       endDate: dayjs().endOf("month"),
     });
     // Reset to first page when clearing filters
-    setPagination((prev) => ({ ...prev, current: 1 }));
-    fetchTransactions();
+    fetchTransactions({ page: 1 });
   };
 
   // Check if any filters are currently applied and not from a saved view
@@ -352,6 +345,7 @@ export const useTransactions = () => {
     // State
     transactions,
     loading,
+    loadingMore,
     tags,
     stats,
     editingTransaction,
@@ -370,7 +364,6 @@ export const useTransactions = () => {
     handleFilter,
     handleEdit,
     cancelEdit,
-    handleTableChange,
     handleSearch,
     handleReset,
     clearFilters,

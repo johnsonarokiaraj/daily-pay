@@ -4,9 +4,21 @@ class Api::TransactionsController < ApplicationController
 
   def index
     @apply_date_filter = params[:start_date].present? || params[:end_date].present?
-    @transactions = get_transactions.limit(params[:limit] || 50).offset(params[:offset] || 0)
-    @credit = @transactions.where(is_credit: true).sum(:amount)
-    @debit = @transactions.where(is_credit: false).sum(:amount)
+    
+    # Pagination parameters
+    page = (params[:page] || 1).to_i
+    page_size = (params[:page_size] || 25).to_i
+    offset = (page - 1) * page_size
+    
+    # Get all matching transactions for totals calculation
+    all_transactions = get_transactions
+    total_count = all_transactions.count
+    total_pages = (total_count.to_f / page_size).ceil
+    
+    # Get paginated transactions
+    @transactions = all_transactions.limit(page_size).offset(offset)
+    @credit = all_transactions.where(is_credit: true).sum(:amount)
+    @debit = all_transactions.where(is_credit: false).sum(:amount)
 
     respond_to do |format|
       format.json do
@@ -25,7 +37,13 @@ class Api::TransactionsController < ApplicationController
           end,
           credit: @credit,
           debit: @debit,
-          count: @transactions.count,
+          pagination: {
+            page: page,
+            page_size: page_size,
+            total_pages: total_pages,
+            total_count: total_count,
+            has_more: page < total_pages
+          },
           tag_names: ActsAsTaggableOn::Tag.all.pluck(:name)
         }
       end

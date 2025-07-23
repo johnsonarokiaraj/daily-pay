@@ -24,7 +24,7 @@ const StatisticValue = {
   period: { color: "#f59e0b" },
 };
 const { Text } = Typography;
-const TransactionStats = ({ stats, currentDateRange }) => {
+const TransactionStats = ({ stats, currentDateRange, pagination }) => {
   const balance = (stats.credit || 0) - (stats.debit || 0);
   return (
     <StatsRow gutter={[16, 16]}>
@@ -32,7 +32,7 @@ const TransactionStats = ({ stats, currentDateRange }) => {
         <Card>
           <Statistic
             title="Total Transactions"
-            value={stats.count}
+            value={pagination.total_count || 0}
             prefix="#"
             valueStyle={StatisticValue.total}
           />

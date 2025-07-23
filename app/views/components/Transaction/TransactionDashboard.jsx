@@ -27,6 +27,7 @@ const TransactionDashboard = () => {
     // State
     transactions,
     loading,
+    loadingMore,
     tags,
     stats,
     editingTransaction,
@@ -42,12 +43,12 @@ const TransactionDashboard = () => {
     handleFilter,
     handleEdit,
     cancelEdit,
-    handleTableChange,
     handleSearch,
     handleReset,
     clearFilters,
     hasFiltersApplied,
     hasActiveFilters,
+    fetchTransactions,
   } = useTransactions();
 
   // Handle form submission with form reset
@@ -66,7 +67,11 @@ const TransactionDashboard = () => {
     <div style={{ padding: "12px" }}>
       <TransactionHeader />
 
-      <TransactionStats stats={stats} currentDateRange={currentDateRange} />
+      <TransactionStats
+        stats={stats}
+        pagination={pagination}
+        currentDateRange={currentDateRange}
+      />
 
       <TransactionForm
         form={quickForm}
@@ -81,12 +86,13 @@ const TransactionDashboard = () => {
       <TransactionList
         transactions={transactions}
         loading={loading}
+        loadingMore={loadingMore}
         editingTransaction={editingTransaction}
         tags={tags}
         pagination={pagination}
         searchText={searchText}
+        fetchTransactions={fetchTransactions}
         searchedColumn={searchedColumn}
-        onTableChange={handleTableChange}
         onEdit={handleEdit}
         onCancelEdit={cancelEdit}
         onUpdate={handleUpdateTransaction}

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo, useEffect } from "react";
 import {
   Table,
   Form,
@@ -7,6 +7,7 @@ import {
   Select,
   Tag,
   Space,
+  Spin,
   Button,
   Typography,
   Switch,
@@ -29,6 +30,7 @@ import {
   FileTextOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { useInView } from "react-intersection-observer";
 import {
   parseTransactionDate,
   formatDisplayDate,
@@ -168,26 +170,37 @@ const ReminderCell = ({ reminder, record, onUpdate }) => {
 const TransactionList = ({
   transactions,
   loading,
+  loadingMore,
   editingTransaction,
   tags,
   pagination,
   searchText,
   searchedColumn,
-  onTableChange,
   onEdit,
   onCancelEdit,
   onUpdate,
   onSearch,
   onReset,
   form,
+  fetchTransactions,
 }) => {
   // State for modal editing
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [editForm] = Form.useForm();
 
+  const { ref: loadMoreRef, inView } = useInView();
+
   // State for reminder form visibility within edit modal
   const [showReminderForm, setShowReminderForm] = useState(false);
+  const { current, pageSize, total, has_more } = pagination;
+
+  useEffect(() => {
+    if (inView && has_more && !loadingMore) {
+      // Load more transactions when the user scrolls to the bottom
+      fetchTransactions({ page: pagination.page + 1 });
+    }
+  }, [inView, has_more, loadingMore]);
 
   // Handle modal edit
   const handleEditClick = (record) => {
@@ -264,7 +277,7 @@ const TransactionList = ({
   // Define table columns
   const columns = [
     {
-      title: "Date",
+      title: "Datesssss",
       dataIndex: "transaction_date",
       key: "transaction_date",
       width: 120,
@@ -355,23 +368,51 @@ const TransactionList = ({
     },
   ];
 
+  const components = useMemo(
+    () => ({
+      header: {
+        row: (props) => <tr {...props} />,
+        cell: (props) => <th {...props} />,
+      },
+      body: {
+        row: (props) => {
+          const { className, ...restProps } = props;
+          if (className && className.includes("loader-row")) {
+            return (
+              <tr {...restProps} className="loader-row" style={{ height: 56 }}>
+                <td colSpan={columns.length} align={"center"}>
+                  <div ref={loadMoreRef}>
+                    <Spin type="inline" />
+                  </div>
+                </td>
+              </tr>
+            );
+          }
+
+          return <tr {...props} />;
+        },
+        cell: (props) => <td {...props}>{props.children}</td>,
+      },
+    }),
+    [loadMoreRef, columns.length],
+  );
+
+  const transactionsData = has_more
+    ? [...transactions, { key: "loader", isLoaderRow: true }]
+    : transactions;
+
   return (
     <StyledCard>
       <Form form={form} onFinish={onUpdate} component={false}>
         <Table
           loading={loading}
-          dataSource={transactions}
+          components={components}
+          dataSource={transactionsData}
           columns={columns}
           rowKey="id"
-          pagination={{
-            ...pagination,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${total} transactions`,
-            showSizeChanger: true,
-            showQuickJumper: true,
-          }}
-          onChange={onTableChange}
-          scroll={{ x: 800 }}
+          rowClassName={(record) => (record.isLoaderRow ? "loader-row" : "")}
+          scroll={{ x: 800, y: 500 }}
+          pagination={false}
           bordered
         />
       </Form>
