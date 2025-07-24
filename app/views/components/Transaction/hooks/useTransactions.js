@@ -46,7 +46,7 @@ export const useTransactions = () => {
       setLoading(true);
       filters.page = pagination.page;
     }
-    filters.page_size = filters.page_size || 25; // Default to 25 items per page
+    filters.page_size = filters.page_size || 10; // Default to 10 items per page
 
     try {
       const response = await axios.get("/api/transactions", {

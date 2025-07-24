@@ -411,7 +411,7 @@ const TransactionList = ({
           columns={columns}
           rowKey="id"
           rowClassName={(record) => (record.isLoaderRow ? "loader-row" : "")}
-          scroll={{ x: 800, y: 500 }}
+          scroll={{ x: 800 }}
           pagination={false}
           bordered
         />
@@ -478,7 +478,7 @@ const TransactionList = ({
               mode="tags"
               placeholder="Add tags..."
               style={{ width: "100%" }}
-              tokenSeparators={[",", " "]}
+              tokenSeparators={[","]}
             >
               {tags.map((tag) => (
                 <Option key={tag} value={tag}>
