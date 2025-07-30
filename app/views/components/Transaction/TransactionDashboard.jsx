@@ -36,6 +36,7 @@ const TransactionDashboard = () => {
     currentDateRange,
     pagination,
     appliedFilters,
+    currentFilters,
 
     // Actions
     handleSubmit,
@@ -92,6 +93,7 @@ const TransactionDashboard = () => {
         pagination={pagination}
         searchText={searchText}
         fetchTransactions={fetchTransactions}
+        currentFilters={currentFilters}
         searchedColumn={searchedColumn}
         onEdit={handleEdit}
         onCancelEdit={cancelEdit}

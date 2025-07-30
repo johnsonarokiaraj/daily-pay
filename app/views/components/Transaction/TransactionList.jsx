@@ -183,6 +183,7 @@ const TransactionList = ({
   onReset,
   form,
   fetchTransactions,
+  currentFilters,
 }) => {
   // State for modal editing
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -198,9 +199,13 @@ const TransactionList = ({
   useEffect(() => {
     if (inView && has_more && !loadingMore) {
       // Load more transactions when the user scrolls to the bottom
-      fetchTransactions({ page: pagination.page + 1 });
+      // Include current filters to maintain the same filters for pagination
+      fetchTransactions({
+        ...currentFilters,
+        page: pagination.page + 1,
+      });
     }
-  }, [inView, has_more, loadingMore]);
+  }, [inView, has_more, loadingMore, currentFilters, pagination.page]);
 
   // Handle modal edit
   const handleEditClick = (record) => {
@@ -277,7 +282,7 @@ const TransactionList = ({
   // Define table columns
   const columns = [
     {
-      title: "Datesssss",
+      title: "Date",
       dataIndex: "transaction_date",
       key: "transaction_date",
       width: 120,
