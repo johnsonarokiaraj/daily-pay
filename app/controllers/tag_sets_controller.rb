@@ -17,10 +17,14 @@ class TagSetsController < ApplicationController
   def create
     @tag_set = TagSet.new(tag_set_params)
 
-    if @tag_set.save
-      redirect_to tag_sets_path, notice: 'Tag set was successfully created.'
-    else
-      render :new
+    respond_to do |format|
+      if @tag_set.save
+        format.html { redirect_to tag_sets_path, notice: 'Tag set was successfully created.' }
+        format.json { render json: @tag_set.as_json(only: [:id, :name], methods: [:tags]), status: :created }
+      else
+        format.html { render :new }
+        format.json { render json: @tag_set.errors, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -28,16 +32,23 @@ class TagSetsController < ApplicationController
   end
 
   def update
-    if @tag_set.update(tag_set_params)
-      redirect_to tag_sets_path, notice: 'Tag set was successfully updated.'
-    else
-      render :edit
+    respond_to do |format|
+      if @tag_set.update(tag_set_params)
+        format.html { redirect_to tag_sets_path, notice: 'Tag set was successfully updated.' }
+        format.json { render json: @tag_set.as_json(only: [:id, :name], methods: [:tags]) }
+      else
+        format.html { render :edit }
+        format.json { render json: @tag_set.errors, status: :unprocessable_entity }
+      end
     end
   end
 
   def destroy
     @tag_set.destroy
-    redirect_to tag_sets_path, notice: 'Tag set was successfully deleted.'
+    respond_to do |format|
+      format.html { redirect_to tag_sets_path, notice: 'Tag set was successfully deleted.' }
+      format.json { head :no_content }
+    end
   end
 
   private
@@ -47,6 +58,6 @@ class TagSetsController < ApplicationController
   end
 
   def tag_set_params
-    params.require(:tag_set).permit(:name, :tags_string)
+    params.require(:tag_set).permit(:name, tags: [])
   end
 end
