@@ -30,7 +30,7 @@ class Api::TransactionsController < ApplicationController
               amount: t.amount,
               transaction_date: t.transaction_date,
               is_credit: t.is_credit?,
-              tag_list: t.tag_list,
+              tag_list: t.tag_list.sort,
               formatted_amount: t.formatted_amount,
               reminder: t.reminder
             }
