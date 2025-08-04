@@ -1,0 +1,39 @@
+<h1>Auto Tag Rules</h1>
+
+<p>
+  <%= link_to 'New Auto Tag Rule', new_auto_tag_rule_path, class: 'btn btn-primary' %>
+</p>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Required Tags</th>
+      <th>Auto Tags</th>
+      <th colspan="3">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @auto_tag_rules.each do |auto_tag_rule| %>
+      <tr>
+        <td>
+          <% if auto_tag_rule.required_tags %>
+            <% auto_tag_rule.required_tags.each do |tag| %>
+              <span class="badge badge-warning"><%= tag %></span>
+            <% end %>
+          <% end %>
+        </td>
+        <td>
+          <% if auto_tag_rule.auto_tags %>
+            <% auto_tag_rule.auto_tags.each do |tag| %>
+              <span class="badge badge-success"><%= tag %></span>
+            <% end %>
+          <% end %>
+        </td>
+        <td><%= link_to 'Show', auto_tag_rule, class: 'btn btn-sm btn-info' %></td>
+        <td><%= link_to 'Edit', edit_auto_tag_rule_path(auto_tag_rule), class: 'btn btn-sm btn-warning' %></td>
+        <td><%= link_to 'Destroy', auto_tag_rule, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-sm btn-danger' %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

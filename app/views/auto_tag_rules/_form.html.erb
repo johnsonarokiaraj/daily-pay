@@ -1,0 +1,28 @@
+<%= form_with(model: auto_tag_rule, local: true) do |form| %>
+  <% if auto_tag_rule.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(auto_tag_rule.errors.count, "error") %> prohibited this auto tag rule from being saved:</h2>
+      <ul>
+        <% auto_tag_rule.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :required_tags %>
+    <%= form.text_field :required_tags, placeholder: "Enter required tags separated by commas" %>
+    <small class="form-text text-muted">Tags that must be present for the rule to trigger</small>
+  </div>
+
+  <div class="field">
+    <%= form.label :auto_tags %>
+    <%= form.text_field :auto_tags, placeholder: "Enter auto tags separated by commas" %>
+    <small class="form-text text-muted">Tags that will be automatically applied</small>
+  </div>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+<% end %>

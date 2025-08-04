@@ -10,6 +10,9 @@ Rails.application.routes.draw do
   # Add proper resourceful routing for tag_sets
   resources :tag_sets
   
+  # Add proper resourceful routing for auto_tag_rules
+  resources :auto_tag_rules
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

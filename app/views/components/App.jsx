@@ -40,6 +40,7 @@ import TransactionApp from "./TransactionApp";
 import ReportsApp from "./ReportsApp";
 import TagsApp from "./TagsApp";
 import TagSetApp from "./TagSetApp";
+import AutoTagRuleApp from "./AutoTagRuleApp";
 import ViewsApp from "./ViewsApp";
 import DataBackupApp from "./DataBackupApp";
 import TargetsApp from "./TargetsApp";
@@ -64,6 +65,7 @@ const AppContent = () => {
     if (path === "/reports") return "reports";
     if (path === "/tags") return "tags";
     if (path === "/tagsets") return "tagsets";
+    if (path === "/auto_tag_rules") return "auto_tag_rules";
     if (path === "/views") return "views";
     if (path === "/backup") return "backup";
     if (path === "/targets") return "targets";
@@ -92,7 +94,7 @@ const AppContent = () => {
     if (["/tasks", "/time_management", "/reminders", "/insights", "/budget_assistant"].includes(path)) {
       return ["assistance"];
     }
-    if (["/tags", "/tagsets", "/backup", "/preferences"].includes(path)) {
+    if (["/tags", "/tagsets", "/auto_tag_rules", "/backup", "/preferences"].includes(path)) {
       return ["settings"];
     }
     return ["finance"];
@@ -431,6 +433,22 @@ const AppContent = () => {
               </Link>
             </Menu.Item>
             <Menu.Item
+              key="auto_tag_rules"
+              icon={<RobotOutlined />}
+              style={{
+                borderRadius: "0 24px 24px 0",
+                marginRight: "12px",
+                marginLeft: "0",
+              }}
+            >
+              <Link
+                to="/auto_tag_rules"
+                style={{ color: "inherit", textDecoration: "none" }}
+              >
+                Auto Tag Rules
+              </Link>
+            </Menu.Item>
+            <Menu.Item
               key="backup"
               icon={<CloudDownloadOutlined />}
               style={{
@@ -600,6 +618,7 @@ const AppContent = () => {
             <Route path="/reports" element={<ReportsApp />} />
             <Route path="/tags" element={<TagsApp />} />
             <Route path="/tagsets" element={<TagSetApp />} />
+            <Route path="/auto_tag_rules" element={<AutoTagRuleApp />} />
             <Route path="/views" element={<ViewsApp />} />
             <Route path="/backup" element={<DataBackupApp />} />
             <Route path="/targets" element={<TargetsApp />} />
