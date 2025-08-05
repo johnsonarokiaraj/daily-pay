@@ -35,7 +35,19 @@ export default function CompareViewsDashboard() {
   useEffect(() => {
     fetch("/api/tags.json")
       .then((res) => res.json())
-      .then((data) => setAllTags(Array.isArray(data) ? data : []));
+      .then((data) => {
+        console.log('Tags API response:', data);
+        // Handle both array and object responses
+        const tagsData = Array.isArray(data) ? data : (data.tags || []);
+        // Extract tag names from the response
+        const tagNames = tagsData.map(tag => typeof tag === 'string' ? tag : tag.name);
+        console.log('Processed tag names:', tagNames);
+        setAllTags(tagNames);
+      })
+      .catch((error) => {
+        console.error('Error fetching tags:', error);
+        setAllTags([]);
+      });
   }, []);
 
   // Open modal
@@ -46,13 +58,22 @@ export default function CompareViewsDashboard() {
   const handleCreate = (values) => {
     console.log('DEBUG: Form values on submit:', values);
     setCreating(true);
+
+    const csrfTokenElement = document.querySelector('meta[name="csrf-token"]');
+    const csrfToken = csrfTokenElement ? csrfTokenElement.getAttribute('content') : '';
+
     fetch("/api/tag_insights_boards", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tag_insights_board_record: values }),
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken
+      },
+      body: JSON.stringify({ tag_insights_board: values }),
     })
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to create board");
+        if (!res.ok) {
+          return res.json().then(err => Promise.reject(err));
+        }
         return res.json();
       })
       .then((newBoard) => {
@@ -62,9 +83,10 @@ export default function CompareViewsDashboard() {
         form.resetFields();
         message.success("Board created!");
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('Create board error:', error);
         setCreating(false);
-        message.error("Failed to create board");
+        message.error(`Failed to create board: ${error.errors ? error.errors.join(', ') : 'Unknown error'}`);
       });
   };
 
@@ -85,13 +107,21 @@ export default function CompareViewsDashboard() {
     editForm.resetFields();
   };
   const handleEdit = (values) => {
+    const csrfTokenElement = document.querySelector('meta[name="csrf-token"]');
+    const csrfToken = csrfTokenElement ? csrfTokenElement.getAttribute('content') : '';
+
     fetch(`/api/tag_insights_boards/${editingBoard.id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tag_insights_board_record: values }),
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken
+      },
+      body: JSON.stringify({ tag_insights_board: values }),
     })
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to update board");
+        if (!res.ok) {
+          return res.json().then(err => Promise.reject(err));
+        }
         return res.json();
       })
       .then((updatedBoard) => {
@@ -101,8 +131,9 @@ export default function CompareViewsDashboard() {
         editForm.resetFields();
         message.success("Board updated!");
       })
-      .catch(() => {
-        message.error("Failed to update board");
+      .catch((error) => {
+        console.error('Update board error:', error);
+        message.error(`Failed to update board: ${error.errors ? error.errors.join(', ') : 'Unknown error'}`);
       });
   };
 
