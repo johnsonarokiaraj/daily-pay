@@ -23,10 +23,22 @@ export default function CompareViewsDashboard() {
   // Fetch all boards on mount
   useEffect(() => {
     fetch("/api/tag_insights_boards.json")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch boards: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
+        console.log('Boards API response:', data);
         setBoards(data);
         fetchFinancialData(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error fetching boards:', error);
+        message.error('Failed to load tag insights boards');
+        setBoards([]);
         setLoading(false);
       });
   }, []);
@@ -139,68 +151,53 @@ export default function CompareViewsDashboard() {
 
   // Fetch financial data for all boards
   const fetchFinancialData = async (boardsData) => {
+    if (!boardsData || boardsData.length === 0) {
+      setBoardsWithFinancials([]);
+      return;
+    }
+
     const boardsWithFinancials = await Promise.all(
       boardsData.map(async (board) => {
         try {
-          // Extract the actual board data from nested structure if needed
-          const actualBoardData = board.board || board;
-
-          // Validate board data - check both flat and nested structures
-          if (!actualBoardData || !actualBoardData.id) {
-            console.error("Invalid board data:", board);
+          // Ensure we have a valid board with ID
+          if (!board || !board.id) {
+            console.warn("Invalid board data:", board);
             return {
-              ...actualBoardData,
+              ...board,
               credit_sum: 0,
               debit_sum: 0,
               balance: 0
             };
           }
 
-          const response = await fetch(`/api/tag_insights_boards/${actualBoardData.id}`);
+          const response = await fetch(`/api/tag_insights_boards/${board.id}`);
 
-          // Check if response is ok before trying to parse JSON
           if (!response.ok) {
-            throw new Error(`API responded with status ${response.status}`);
-          }
-
-          // Check content type to ensure we're getting JSON
-          const contentType = response.headers.get('content-type');
-          if (!contentType || !contentType.includes('application/json')) {
-            throw new Error(`Expected JSON but got ${contentType}`);
+            console.warn(`Failed to fetch financial data for board ${board.id}: ${response.status}`);
+            return {
+              ...board,
+              credit_sum: 0,
+              debit_sum: 0,
+              balance: 0
+            };
           }
 
           const responseData = await response.json();
 
-          // If the API returns data with credit_sum, debit_sum, and balance at the top level,
-          // use these values directly regardless of nested structure
-          if (responseData.credit_sum !== undefined &&
-              responseData.debit_sum !== undefined &&
-              responseData.balance !== undefined) {
-
-            return {
-              ...actualBoardData,
-              credit_sum: responseData.credit_sum,
-              debit_sum: responseData.debit_sum,
-              balance: responseData.balance
-            };
-          }
-
-          // Otherwise try to extract financial data from the flattened data structure
-          const data = responseData;
-          const mainTagData = data.flattened && data.flattened.find(row => row.type === 'main_tag');
+          // Extract financial data from the response
+          const data = responseData.board || responseData;
+          const mainTagData = responseData.flattened && responseData.flattened.find(row => row.type === 'main_tag');
 
           return {
-            ...actualBoardData,
+            ...board,
             credit_sum: mainTagData ? mainTagData.credit_sum : 0,
             debit_sum: mainTagData ? mainTagData.debit_sum : 0,
             balance: mainTagData ? mainTagData.sum : 0
           };
         } catch (error) {
-          const actualBoardData = board.board || board;
-          const boardId = actualBoardData && actualBoardData.id;
-          console.error(`Error fetching financial data for board ${boardId || 'unknown'}:`, error);
+          console.warn(`Error fetching financial data for board ${board.id}:`, error);
           return {
-            ...actualBoardData,
+            ...board,
             credit_sum: 0,
             debit_sum: 0,
             balance: 0

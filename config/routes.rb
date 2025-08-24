@@ -53,7 +53,6 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :tag_insights_boards, only: [:index, :new, :create, :show, :edit, :update]
   resources :tags, only: [:index]
 
   # Serve backup files for download

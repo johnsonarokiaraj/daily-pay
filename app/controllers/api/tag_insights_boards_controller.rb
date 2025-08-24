@@ -3,8 +3,22 @@ module Api
     skip_before_action :verify_authenticity_token
 
     def index
-      boards = TagInsightsBoardRecord.all
-      render json: boards
+      @boards = TagInsightsBoardRecord.all
+      # Calculate financial data for each board
+      @boards_with_financials = @boards.map do |board|
+        insights = TagInsightsBoard.new(board.main_tag, JSON.parse(board.sub_tags.to_json))
+        flattened = insights.flattened_view
+        main_tag_data = flattened.find { |row| row[:type] == :main_tag }
+  
+        board_data = {
+          board: board,
+          credit_sum: main_tag_data ? main_tag_data[:credit_sum] : 0,
+          debit_sum: main_tag_data ? main_tag_data[:debit_sum] : 0,
+          balance: main_tag_data ? main_tag_data[:sum] : 0,
+        }
+        board_data
+      end
+      render json: @boards_with_financials
     end
 
     def show
