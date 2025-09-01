@@ -127,6 +127,24 @@ class Api::TransactionsController < ApplicationController
     render json: { credit: credit, debit: debit }
   end
 
+  def check_duplicate
+    date_str = params[:transaction_date]
+    amount = params[:amount]
+
+    begin
+      date = Date.strptime(date_str, '%d-%m-%Y') if date_str.present?
+    rescue ArgumentError
+      return render json: { error: 'Invalid date format' }, status: :unprocessable_entity
+    end
+
+    if date.blank? || amount.blank?
+      return render json: { error: 'transaction_date and amount are required' }, status: :unprocessable_entity
+    end
+
+    duplicate = Transaction.where(transaction_date: date, amount: amount).exists?
+    render json: { duplicate: duplicate }
+  end
+
   private
 
   def set_date_range

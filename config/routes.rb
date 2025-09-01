@@ -27,6 +27,7 @@ Rails.application.routes.draw do
     resources :transactions, defaults: { format: :json } do
       collection do
         get :stats
+        get :check_duplicate
       end
     end
     resources :reports, defaults: { format: :json }

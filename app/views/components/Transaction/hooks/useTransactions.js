@@ -91,17 +91,31 @@ export const useTransactions = () => {
       const data = {
         ...values,
         transaction_date: values.transaction_date.format("DD-MM-YYYY"),
-        tag_list: values.tag_list || [], // Send as array, not string
+        tag_list: values.tag_list || [],
         is_credit: values.is_credit || false,
       };
+
+      // Check duplicate before creating
+      try {
+        const dupRes = await axios.get('/api/transactions/check_duplicate', {
+          params: { transaction_date: data.transaction_date, amount: data.amount }
+        });
+        if (dupRes.data && dupRes.data.duplicate) {
+          const proceed = window.confirm(`A transaction with the same date (${data.transaction_date}) and amount (₹${data.amount}) already exists. Do you want to add another?`);
+          if (!proceed) {
+            return false;
+          }
+        }
+      } catch (_) {
+        // If duplicate check fails, continue to create to avoid blocking UX
+      }
 
       const response = await axios.post("/api/transactions", { transaction: data });
       message.success("Transaction added successfully");
       if (response.data.transaction && response.data.status === "success") {
-        // Add the new transaction to the list
         setTransactions((prev) => [response.data.transaction, ...prev]);
       }
-      return true; // Success indicator
+      return true;
     } catch (error) {
       message.error("Failed to save transaction");
       return false;
