@@ -51,6 +51,11 @@ Rails.application.routes.draw do
         resources :comments, defaults: { format: :json }
       end
     end
+    resources :recurring_transactions, defaults: { format: :json } do
+      collection do
+        post :run_due
+      end
+    end
   end
 
   resources :tags, only: [:index]

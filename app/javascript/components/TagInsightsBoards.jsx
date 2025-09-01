@@ -76,7 +76,7 @@ const TagInsightsBoards = () => {
                       <i className="fas fa-tag"></i>
                       {board.main_tag}
                     </span>
-                    {board.sub_tags?.length > 0 && (
+                    {Array.isArray(board.sub_tags) && board.sub_tags.length > 0 && (
                       <span className="sub-tags-count">
                         <i className="fas fa-tags"></i>
                         {board.sub_tags.length} sub-tags

@@ -48,6 +48,7 @@ import CompareViewsDashboard from "./Transaction/CompareViewsDashboard";
 import TagInsightsBoardDetail from "./Transaction/TagInsightsBoardDetail";
 import TasksModule from "../../javascript/components/TasksModule";
 import TimeManagement from "./TimeManagement";
+import RecurringTransactionsApp from "./RecurringTransactionsApp";
 
 const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
@@ -76,6 +77,7 @@ const AppContent = () => {
     if (path === "/insights") return "insights";
     if (path === "/budget_assistant") return "budget_assistant";
     if (path === "/preferences") return "preferences";
+    if (path === "/recurring_transactions") return "recurring_transactions";
     return "transactions";
   };
 
@@ -94,7 +96,7 @@ const AppContent = () => {
     if (["/tasks", "/time_management", "/reminders", "/insights", "/budget_assistant"].includes(path)) {
       return ["assistance"];
     }
-    if (["/tags", "/tagsets", "/auto_tag_rules", "/backup", "/preferences"].includes(path)) {
+    if (["/tags", "/tagsets", "/auto_tag_rules", "/backup", "/preferences", "/recurring_transactions"].includes(path)) {
       return ["settings"];
     }
     return ["finance"];
@@ -449,6 +451,22 @@ const AppContent = () => {
               </Link>
             </Menu.Item>
             <Menu.Item
+              key="recurring_transactions"
+              icon={<ClockCircleOutlined />}
+              style={{
+                borderRadius: "0 24px 24px 0",
+                marginRight: "12px",
+                marginLeft: "0",
+              }}
+            >
+              <Link
+                to="/recurring_transactions"
+                style={{ color: "inherit", textDecoration: "none" }}
+              >
+                Recurring Transactions
+              </Link>
+            </Menu.Item>
+            <Menu.Item
               key="backup"
               icon={<CloudDownloadOutlined />}
               style={{
@@ -629,6 +647,7 @@ const AppContent = () => {
             />
             <Route path="/tasks" element={<TasksModule />} />
             <Route path="/time_management" element={<TimeManagement />} />
+            <Route path="/recurring_transactions" element={<RecurringTransactionsApp />} />
             {/* Placeholder routes for new sections */}
             <Route
               path="/reminders"

@@ -1,6 +1,7 @@
 class Api::TransactionsController < ApplicationController
   skip_before_action :verify_authenticity_token
   before_action :set_date_range, only: [:index]
+  before_action :run_due_recurring, only: [:index]
 
   def index
     @apply_date_filter = params[:start_date].present? || params[:end_date].present?
@@ -131,6 +132,12 @@ class Api::TransactionsController < ApplicationController
   def set_date_range
     @start_date = params[:start_date].present? ? Date.strptime(params[:start_date], '%d-%m-%Y') : Date.current.beginning_of_month
     @end_date = params[:end_date].present? ? Date.strptime(params[:end_date], '%d-%m-%Y') : Date.current.end_of_month
+  end
+
+  def run_due_recurring
+    RecurringTransaction.run_due!
+  rescue => e
+    Rails.logger.error("Failed to run recurring transactions: #{e.class} - #{e.message}")
   end
 
   def transaction_json(transaction)

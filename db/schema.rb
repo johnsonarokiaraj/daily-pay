@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_07_19_152319) do
+ActiveRecord::Schema[7.1].define(version: 2025_08_31_000000) do
   create_table "auto_tag_rules", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.text "required_tags"
     t.text "auto_tags"
@@ -27,6 +27,24 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_19_152319) do
     t.index ["task_id"], name: "index_comments_on_task_id"
   end
 
+  create_table "recurring_transactions", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.string "name", null: false
+    t.decimal "amount", precision: 12, scale: 2, null: false
+    t.boolean "is_credit", default: false, null: false
+    t.string "schedule_type", null: false
+    t.integer "day_of_month"
+    t.integer "weekday"
+    t.integer "month_of_year"
+    t.date "next_run_on"
+    t.date "last_run_on"
+    t.boolean "active", default: true, null: false
+    t.text "tags"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_recurring_transactions_on_active"
+    t.index ["next_run_on"], name: "index_recurring_transactions_on_next_run_on"
+  end
+
   create_table "tag_insights_board_records", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "main_tag", null: false
@@ -39,9 +57,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_19_152319) do
 
   create_table "tag_sets", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.string "name"
-    t.text "tags"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "tags"
   end
 
   create_table "taggings", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
