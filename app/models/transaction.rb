@@ -52,8 +52,8 @@ class Transaction < ApplicationRecord
       end
       credit_sum = transactions.where(is_credit: true).pluck(:amount).map(&:to_f).sum
       debit_sum = transactions.where(is_credit: false).pluck(:amount).map(&:to_f).sum
-
-      avg = transactions.any? ? sum / transactions.size : 0.0
+  total_amount = transactions.pluck(:amount).map(&:to_f).sum
+  avg = transactions.any? ? total_amount / transactions.size : 0.0
       result[main_tag] << {
         sub_tag => {
           transactions: transaction_hashes,

@@ -4,6 +4,7 @@ class View < ApplicationRecord
   
   # For future user association
   # belongs_to :user, optional: true
+  has_many :targets, dependent: :destroy
   
   # Parse filters JSON
   def parsed_filters

@@ -3,27 +3,16 @@ module Api
     skip_before_action :verify_authenticity_token
 
     def index
-      @boards = TagInsightsBoardRecord.all
-      # Calculate financial data for each board
-      @boards_with_financials = @boards.map do |board|
-        insights = TagInsightsBoard.new(board.main_tag, JSON.parse(board.sub_tags.to_json))
-        flattened = insights.flattened_view
-        main_tag_data = flattened.find { |row| row[:type] == :main_tag }
-  
-        board_data = {
-          board: board,
-          credit_sum: main_tag_data ? main_tag_data[:credit_sum] : 0,
-          debit_sum: main_tag_data ? main_tag_data[:debit_sum] : 0,
-          balance: main_tag_data ? main_tag_data[:sum] : 0,
-        }
-        board_data
-      end
-      render json: @boards_with_financials
+  # Return plain boards; financials are fetched per-board via show
+  boards = TagInsightsBoardRecord.all
+  render json: boards
     end
 
     def show
       board = TagInsightsBoardRecord.find(params[:id])
-      insights = TagInsightsBoard.new(board.main_tag, board.sub_tags)
+  # Ensure sub_tags is always an array
+  sub_tags = board.sub_tags.is_a?(Array) ? board.sub_tags : Array(board.sub_tags).compact
+  insights = TagInsightsBoard.new(board.main_tag, sub_tags)
       flattened = insights.flattened_view
       render json: { board: board, flattened: flattened }
     end
@@ -33,8 +22,11 @@ module Api
       if board.save
         render json: board, status: :created
       else
-        render json: board.errors, status: :unprocessable_entity
+        render json: { errors: board.errors.full_messages }, status: :unprocessable_entity
       end
+    rescue => e
+      Rails.logger.error "Board create failed: #{e.class} - #{e.message}"
+      render json: { errors: ["Internal server error"] }, status: :internal_server_error
     end
 
     def update
