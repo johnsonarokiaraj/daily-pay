@@ -49,6 +49,7 @@ import TagInsightsBoardDetail from "./Transaction/TagInsightsBoardDetail";
 import TasksModule from "../../javascript/components/TasksModule";
 import TimeManagement from "./TimeManagement";
 import RecurringTransactionsApp from "./RecurringTransactionsApp";
+import TransactionTagUpdater from "./TransactionTagUpdater";
 
 const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
@@ -61,24 +62,25 @@ const AppContent = () => {
 
   // Determine selected key based on current route
   const getSelectedKey = () => {
-    const path = location.pathname;
-    if (path === "/transactions") return "transactions";
-    if (path === "/reports") return "reports";
-    if (path === "/tags") return "tags";
-    if (path === "/tagsets") return "tagsets";
-    if (path === "/auto_tag_rules") return "auto_tag_rules";
-    if (path === "/views") return "views";
-    if (path === "/backup") return "backup";
-    if (path === "/targets") return "targets";
-    if (path === "/compare") return "compare";
-    if (path === "/tasks") return "tasks";
-    if (path === "/time_management") return "time_management";
-    if (path === "/reminders") return "reminders";
-    if (path === "/insights") return "insights";
-    if (path === "/budget_assistant") return "budget_assistant";
-    if (path === "/preferences") return "preferences";
-    if (path === "/recurring_transactions") return "recurring_transactions";
-    return "transactions";
+  const path = location.pathname;
+  if (path === "/transactions") return "transactions";
+  if (path === "/reports") return "reports";
+  if (path === "/tags") return "tags";
+  if (path === "/tagsets") return "tagsets";
+  if (path === "/auto_tag_rules") return "auto_tag_rules";
+  if (path === "/views") return "views";
+  if (path === "/backup") return "backup";
+  if (path === "/targets") return "targets";
+  if (path === "/compare") return "compare";
+  if (path === "/tasks") return "tasks";
+  if (path === "/time_management") return "time_management";
+  if (path === "/reminders") return "reminders";
+  if (path === "/insights") return "insights";
+  if (path === "/budget_assistant") return "budget_assistant";
+  if (path === "/preferences") return "preferences";
+  if (path === "/recurring_transactions") return "recurring_transactions";
+  if (path === "/transaction_tag_updater") return "transaction_tag_updater";
+  return "transactions";
   };
 
   const selectedKey = getSelectedKey();
@@ -86,17 +88,13 @@ const AppContent = () => {
   // Get the parent menu key for opening the correct submenu
   const getOpenKeys = () => {
     const path = location.pathname;
-    if (
-      ["/transactions", "/views", "/compare", "/targets", "/reports"].includes(
-        path,
-      )
-    ) {
+    if (["/transactions", "/views", "/compare", "/targets", "/reports"].includes(path)) {
       return ["finance"];
     }
     if (["/tasks", "/time_management", "/reminders", "/insights", "/budget_assistant"].includes(path)) {
       return ["assistance"];
     }
-    if (["/tags", "/tagsets", "/auto_tag_rules", "/backup", "/preferences", "/recurring_transactions"].includes(path)) {
+    if (["/tags", "/tagsets", "/auto_tag_rules", "/backup", "/preferences", "/recurring_transactions", "/transaction_tag_updater"].includes(path)) {
       return ["settings"];
     }
     return ["finance"];
@@ -498,6 +496,22 @@ const AppContent = () => {
                 Preferences
               </Link>
             </Menu.Item>
+            <Menu.Item
+              key="transaction_tag_updater"
+              icon={<TagsOutlined />}
+              style={{
+                borderRadius: "0 24px 24px 0",
+                marginRight: "12px",
+                marginLeft: "0",
+              }}
+            >
+              <Link
+                to="/transaction_tag_updater"
+                style={{ color: "inherit", textDecoration: "none" }}
+              >
+                Transaction Tag Updater
+              </Link>
+            </Menu.Item>
           </SubMenu>
         </Menu>
 
@@ -648,6 +662,7 @@ const AppContent = () => {
             <Route path="/tasks" element={<TasksModule />} />
             <Route path="/time_management" element={<TimeManagement />} />
             <Route path="/recurring_transactions" element={<RecurringTransactionsApp />} />
+            <Route path="/transaction_tag_updater" element={<TransactionTagUpdater />} />
             {/* Placeholder routes for new sections */}
             <Route
               path="/reminders"

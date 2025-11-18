@@ -47,6 +47,7 @@ Rails.application.routes.draw do
       end
     end
     resources :tag_insights_boards, only: [:index, :create, :show, :update]
+  resources :transaction_tag_updater, only: [:create], defaults: { format: :json }
     resources :task_sections, defaults: { format: :json } do
       resources :tasks, defaults: { format: :json } do
         resources :comments, defaults: { format: :json }
