@@ -74,13 +74,16 @@ const ReportsApp = () => {
   const fetchReports = async (filters = {}) => {
     setLoading(true);
     try {
+      console.log("Fetching reports with filters:", filters);
       const response = await axios.get("/api/reports", { params: filters });
+      console.log("Reports response:", response.data);
       if (response.data) {
         setReportsData(response.data);
       }
     } catch (error) {
       message.error("Failed to load reports");
       console.error("Failed to load reports:", error);
+      console.error("Error details:", error.response);
     } finally {
       setLoading(false);
     }

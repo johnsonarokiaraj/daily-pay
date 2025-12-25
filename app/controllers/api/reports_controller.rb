@@ -82,7 +82,7 @@ class Api::ReportsController < ApplicationController
     
     # Group by month and get totals
     monthly_data = transactions
-      .group("strftime('%Y-%m', transaction_date)")
+      .group("DATE_FORMAT(transaction_date, '%Y-%m')")
       .group(:is_credit)
       .sum(:amount)
     
@@ -139,12 +139,12 @@ class Api::ReportsController < ApplicationController
     
     current_year_data = Transaction
       .where(transaction_date: Date.new(current_year, 1, 1)..Date.new(current_year, 12, 31))
-      .group("strftime('%m', transaction_date)")
+      .group("DATE_FORMAT(transaction_date, '%m')")
       .sum(:amount)
     
     last_year_data = Transaction
       .where(transaction_date: Date.new(last_year, 1, 1)..Date.new(last_year, 12, 31))
-      .group("strftime('%m', transaction_date)")
+      .group("DATE_FORMAT(transaction_date, '%m')")
       .sum(:amount)
     
     result = []
